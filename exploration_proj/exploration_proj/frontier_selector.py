@@ -9,7 +9,7 @@ from std_msgs.msg import Float32MultiArray
 class FrontierNavigator(Node):
 
     def __init__(self):
-        super().__init__('frontier_navigator')  # this defines the node name
+        super().__init__('frontier_navigator')  # node name
 
 
         # Subscribe to frontier candidates from Ray
