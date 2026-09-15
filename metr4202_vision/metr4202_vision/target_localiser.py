@@ -23,14 +23,14 @@ class TargetLocalizer(Node):
         for pose, marker_id in zip(msg.poses, msg.marker_ids):
             try:
                 # Transform from camera to odom frame
-                transform = self.tf_buffer.lookup_transform('odom', msg.header.frame_id, rclpy.time.Time())
+                transform = self.tf_buffer.lookup_transform('map', msg.header.frame_id, rclpy.time.Time())
                 
                 # FIX 1: Pass the raw 'pose' directly into the transform
                 global_pose = tf2_geometry_msgs.do_transform_pose(pose, transform)
                 
                 # Format for RViz Visualization
                 marker = Marker()
-                marker.header.frame_id = 'odom'
+                marker.header.frame_id = 'map'
                 marker.ns, marker.id, marker.type = 'aruco', marker_id, Marker.CUBE
                 
                 # FIX 2: Assign the transformed pose directly (no .pose needed)
