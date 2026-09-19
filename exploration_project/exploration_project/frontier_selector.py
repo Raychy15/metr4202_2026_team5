@@ -1,8 +1,13 @@
 import rclpy
 from rclpy.node import Node
 
-from nav2_msgs.msg import BehaviorTreeLog
-from geometry_msgs.msg import PoseStamped
+#from nav2_msgs.msg import BehaviorTreeLog
+#from geometry_msgs.msg import PoseStamped
+#from std_msgs.msg import Float32MultiArray
+
+from rclpy.action import ActionClient
+
+from nav2_msgs.action import NavigateToPose
 from std_msgs.msg import Float32MultiArray
 
 
@@ -19,29 +24,37 @@ class FrontierNavigator(Node):
             self.frontier_callback,
             10
         )
+
+        # Use Nav2 NavigateToPose action instead of publishing /goal_pose
+        self.nav_client = ActionClient(
+            self,
+            NavigateToPose,
+            'navigate_to_pose'
+        )
         # Create a subscriber to the behavior_tree_log topic
         # The constructor inputs are (message type, topic name, associated
         # callback function, message queue length)
-        self.subscription = self.create_subscription(
-            BehaviorTreeLog,
-            'behavior_tree_log',
-            self.bt_log_callback,
-            10)
-        self.subscription  # prevent unused variable warning
+        # self.subscription = self.create_subscription(
+        #     BehaviorTreeLog,
+        #     'behavior_tree_log',
+        #     self.bt_log_callback,
+        #     10)
+        # self.subscription  # prevent unused variable warning
 
         # Create a publisher
         # The constructor inputs are (message type, topic name, message queue
         # length)
-        self.publisher_ = self.create_publisher(
-            PoseStamped,
-            'goal_pose',
-            10)
+        # self.publisher_ = self.create_publisher(
+        #     PoseStamped,
+        #     'goal_pose',
+        #     10)
 
         # Keep track of the number of waypoints sent
         self.waypoint_counter = 0
 
         # Store the most recent frontier candidates
         self.frontiers = []
+        self.failed_frontiers = []
 
         # Track whether a goal was already set
         self.goal_active = False
@@ -95,38 +108,45 @@ class FrontierNavigator(Node):
             self.send_waypoint()
 
 
-
-    def bt_log_callback(self, msg: BehaviorTreeLog):
-        # Check the current state of the behaviour tree
-        # When the robot has reached its waypoint, the top level node state
-        # is 'NavigateRecovery' and the event status is 'IDLE'
-        # If the behaviour tree is in this state, send the next waypoint
-        for event in msg.event_log:
-            if (event.node_name == 'NavigateRecovery'
-                    and event.current_status == 'IDLE'):
-                # Current navigation done
-                self.goal_active = False
-
-                # Send another frontier if available
-                if len(self.frontiers) > 0:
-                    self.send_waypoint()
-
     #might change later depending on how tests go
     def choose_frontier(self):
         # Sort all available frontiers by size (largest first)
         sorted_frontiers = sorted(self.frontiers, key=lambda f: f[2], reverse=True)
         
         for frontier in sorted_frontiers:
-            # If the robot just attempted this general area, skip it to prevent infinite loops
-            if self.current_goal is not None:
-                dist = ((frontier[0] - self.current_goal[0])**2 + (frontier[1] - self.current_goal[1])**2)**0.5
-                if dist < 0.5:  # If within 50cm of the last goal, ignore it and try the next largest
-                    continue
+
+            x, y, size = frontier
+
+            failed = False
+            #need to check frontiers close to failed ones to try prevent loop
+            for failed_x, failed_y in self.failed_frontiers:
+
+                distance = (
+                    (x - failed_x) ** 2
+                    + (y - failed_y) ** 2
+                ) ** 0.5
+
+                #ignore anything within 0.5m of previous failed fronter
+                if distance < 0.5:
+                    failed = True
+                    break
+
+            #use frontier that has not failed
+            if not failed:
+                return frontier
+
+        return None
+
+
+            # # If the robot just attempted this general area, skip it to prevent infinite loops
+            # if self.current_goal is not None:
+            #     dist = ((frontier[0] - self.current_goal[0])**2 + (frontier[1] - self.current_goal[1])**2)**0.5
+            #     if dist < 0.5:  # If within 50cm of the last goal, ignore it and try the next largest
+            #         continue
             
-            return frontier
+            # return frontier
             
-        # Fallback to the largest if all others are skipped
-        return sorted_frontiers[0]
+        # No suitable frontier
 
 
     def send_waypoint(self):
@@ -138,29 +158,141 @@ class FrontierNavigator(Node):
         self.waypoint_counter += 1
 
         # Choose which frontier to visit
-        x, y, size = self.choose_frontier()     
+        frontier = self.choose_frontier()
 
-        goal = PoseStamped()
+        if frontier is None:
+            self.get_logger().info('No suitable frontier')
+            return
+        
+        x, y, size = frontier  
 
-        goal.header.frame_id = 'map'
-        goal.header.stamp = self.get_clock().now().to_msg()
+        # goal = PoseStamped()
 
-        goal.pose.position.x = x
-        goal.pose.position.y = y
+        # goal.header.frame_id = 'map'
+        # goal.header.stamp = self.get_clock().now().to_msg()
 
-        # No particular heading required
-        goal.pose.orientation.w = 1.0
+        # goal.pose.position.x = x
+        # goal.pose.position.y = y
 
-        self.publisher_.publish(goal)
+        # # No particular heading required
+        # goal.pose.orientation.w = 1.0
+
+        #self.publisher_.publish(goal)
 
         self.goal_active = True
         self.current_goal = (x, y)
+
+        # Create Nav2 goal
+        goal = NavigateToPose.Goal()
+
+        goal.pose.header.frame_id = 'map'
+        goal.pose.header.stamp = self.get_clock().now().to_msg()
+
+        goal.pose.pose.position.x = x
+        goal.pose.pose.position.y = y
+
+        # No particular heading required
+        goal.pose.pose.orientation.w = 1.0
 
         self.get_logger().info(
             'Sent frontier goal: '
             'x=%.2f, y=%.2f, size=%.0f'
             % (x, y, size)
         )
+
+        # Wait for Nav2 action server
+        if not self.nav_client.wait_for_server(timeout_sec=2.0):
+
+            self.get_logger().info(
+                'Nav2 action server not available'
+            )
+
+            self.goal_active = False
+            return
+
+        # Send goal to Nav2
+        future = self.nav_client.send_goal_async(goal)
+
+        future.add_done_callback(
+            self.goal_response_callback
+        )
+
+
+    def goal_response_callback(self, future):
+
+        goal_handle = future.result()
+
+        # Nav2 rejected the goal
+        if not goal_handle.accepted:
+
+            self.get_logger().info(
+                'Frontier goal was rejected'
+            )
+
+            self.blacklist_current_goal()
+
+            self.goal_active = False
+            self.current_goal = None
+            self.send_waypoint()
+
+            return
+
+        self.get_logger().info(
+            'Frontier goal accepted'
+        )
+
+        # Wait for navigation to finish
+        result_future = goal_handle.get_result_async()
+
+        result_future.add_done_callback(
+        self.navigation_result_callback
+        )
+
+
+    def navigation_result_callback(self, future):
+
+        result = future.result()
+
+        # ROS action status:
+        # 4 = succeeded
+        # 5 = cancelled
+        # 6 = aborted
+
+        if result.status == 4:
+
+            self.get_logger().info(
+                'Frontier reached successfully'
+            )
+
+        else:
+
+            self.get_logger().info(
+                'Could not reach frontier - blacklisting it'
+            )
+
+            self.blacklist_current_goal()
+
+        # Robot is no longer navigating
+        self.goal_active = False
+        self.current_goal = None
+
+        # Try the next available frontier
+        if len(self.frontiers) > 0:
+            self.send_waypoint()
+
+
+    def blacklist_current_goal(self):
+
+        if self.current_goal is not None:
+
+            self.failed_frontiers.append(
+                self.current_goal
+            )
+
+            self.get_logger().info(
+                'Blacklisted frontier: x=%.2f, y=%.2f'
+                % self.current_goal
+            )
 
 
 def main(args=None):

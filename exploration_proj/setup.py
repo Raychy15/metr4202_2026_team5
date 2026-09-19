@@ -35,8 +35,8 @@ setup(
     entry_points={
         'console_scripts': [
             'frontier_detection = exploration_project.frontier_detection:main',
-            'exploration_navigation = exploration_project.exploration_navigation:main',
-            'aruco_detection = exploration_project.aruco_detection:main',
+            'frontier_selector = exploration_proj.frontier_selector:main',
+            #sensorcode
         ],
     },
 )
