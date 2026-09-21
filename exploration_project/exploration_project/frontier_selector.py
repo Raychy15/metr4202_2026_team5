@@ -61,7 +61,7 @@ class FrontierNavigator(Node):
         # Keep track of when current goal was sent
         self.goal_start_time = None
 
-        # Maximum time allowed for one frontier
+        # Maximum time allowed for one frontier up for change
         self.goal_timeout = 15.0
 
          # Check for a stuck goal once per second
