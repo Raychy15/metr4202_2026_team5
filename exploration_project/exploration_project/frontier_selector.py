@@ -1,9 +1,13 @@
 import rclpy
+import time
+
 from rclpy.node import Node
 
 #from nav2_msgs.msg import BehaviorTreeLog
 from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Float32MultiArray
+
+
 
 
 
@@ -170,7 +174,7 @@ class FrontierNavigator(Node):
         self.current_goal = (x, y)
 
         # Store the time the goal was sent
-        self.goal_start_time = self.get_clock().now()
+        self.goal_start_time = time.monotonic()
 
         # # Create Nav2 goal
         # goal = NavigateToPose.Goal()
@@ -224,16 +228,20 @@ class FrontierNavigator(Node):
         if self.goal_start_time is None:
             return
 
-        elapsed = (
-            self.get_clock().now() -
-            self.goal_start_time
-        ).nanoseconds / 1e9
+        # Calculate real time since goal was sent
+        elapsed = time.monotonic() - self.goal_start_time
 
-        # Robot has spent too long trying the same frontier
-        if elapsed > self.goal_timeout:
+        # Print time for testing
+        self.get_logger().info(
+        'Goal active for %.1f seconds'
+        % elapsed
+        )
+
+    # Robot has spent too long on this frontier
+        if elapsed >= self.goal_timeout:
 
             self.get_logger().info(
-                'Frontier timed out - blacklisting it'
+            'Frontier timed out - blacklisting it'
             )
 
             self.blacklist_current_goal()
@@ -241,10 +249,6 @@ class FrontierNavigator(Node):
             self.goal_active = False
             self.current_goal = None
             self.goal_start_time = None
-
-            # # Try a different frontier
-            # if len(self.frontiers) > 0:
-            #     self.send_waypoint()
 
 
 
