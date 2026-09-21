@@ -6,7 +6,7 @@ Autonomous Exploration and Vision Project
 	
 2. Launch SLAM 
 	export TURTLEBOT3_MODEL=waffle_pi
-	ros2 launch turtlebot3_cartographer cartographer.launch.py use_sim_time:=true
+	ros2 launch slam_toolbox online_async_launch.py use_sim_time:=True
 
 3. Launch Nav2
 	export TURTLEBOT3_MODEL=waffle_pi
