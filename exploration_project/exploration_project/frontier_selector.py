@@ -62,7 +62,7 @@ class FrontierNavigator(Node):
         self.goal_start_time = None
 
         # Maximum time allowed for one frontier
-        self.goal_timeout = 30.0
+        self.goal_timeout = 15.0
 
          # Check for a stuck goal once per second
         self.timer = self.create_timer(
