@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 
-from nav2_msgs.msg import BehaviorTreeLog
+#from nav2_msgs.msg import BehaviorTreeLog
 from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Float32MultiArray
 
@@ -22,15 +22,16 @@ class FrontierNavigator(Node):
         )
 
         
+
         # Create a subscriber to the behavior_tree_log topic
         # The constructor inputs are (message type, topic name, associated
         # callback function, message queue length)
-        self.subscription = self.create_subscription(
-            BehaviorTreeLog,
-            'behavior_tree_log',
-            self.bt_log_callback,
-            10)
-        self.subscription  # prevent unused variable warning
+        # self.subscription = self.create_subscription(
+        #     BehaviorTreeLog,
+        #     'behavior_tree_log',
+        #     self.bt_log_callback,
+        #     10)
+        # self.subscription  # prevent unused variable warning
 
         # Create a publisher
         # The constructor inputs are (message type, topic name, message queue
@@ -65,24 +66,6 @@ class FrontierNavigator(Node):
             self.check_goal_timeout
         )
 
-
-        # # Manually input the two waypoints
-        # # Best practice would be to put these in a config file that's read in
-        # # as params
-        # p0 = PoseStamped()
-        # p0.header.frame_id = 'map'
-        # p0.pose.position.x = 1.7
-        # p0.pose.position.y = -0.5
-        # p0.pose.orientation.w = 1.0
-
-        # p1 = PoseStamped()
-        # p1.header.frame_id = 'map'
-        # p1.pose.position.x = -0.6
-        # p1.pose.position.y = 1.8
-        # p1.pose.orientation.w = 1.0
-
-        # # Store the waypoints as a member variable
-        # self.waypoints = [p0, p1]
 
     def frontier_callback(self, msg: Float32MultiArray):
         #gather all data on frontiers
@@ -207,29 +190,29 @@ class FrontierNavigator(Node):
 
 
 
-    def bt_log_callback(self, msg: BehaviorTreeLog):
+    # def bt_log_callback(self, msg: BehaviorTreeLog):
 
 
-        # Check behaviour tree for completed navigation
-        for event in msg.event_log:
+    #     # Check behaviour tree for completed navigation
+    #     for event in msg.event_log:
 
-            if (event.node_name == 'NavigateRecovery'
-                    and event.current_status == 'IDLE'):
+    #         if (event.node_name == 'NavigateRecovery'
+    #                 and event.current_status == 'IDLE'):
 
-                # Only do this if we actually have an active goal
-                if not self.goal_active:
-                    continue
+    #             # Only do this if we actually have an active goal
+    #             if not self.goal_active:
+    #                 continue
 
-                self.get_logger().info(
-                    'Navigation finished - selecting new frontier'
-                )
+    #             self.get_logger().info(
+    #                 'Navigation finished - selecting new frontier'
+    #             )
 
-                self.goal_active = False
-                self.current_goal = None
-                self.goal_start_time = None
-                # Latest map/frontiers will be used
-                # if len(self.frontiers) > 0:
-                #     self.send_waypoint()
+    #             self.goal_active = False
+    #             self.current_goal = None
+    #             self.goal_start_time = None
+    #             # Latest map/frontiers will be used
+    #             # if len(self.frontiers) > 0:
+    #             #     self.send_waypoint()
 
 
     def check_goal_timeout(self):
