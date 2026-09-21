@@ -189,7 +189,7 @@ class FrontierNavigator(Node):
         )
 
 
-
+    #removing for test
     # def bt_log_callback(self, msg: BehaviorTreeLog):
 
 
