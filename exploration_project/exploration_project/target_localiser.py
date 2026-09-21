@@ -18,36 +18,53 @@ class TargetLocalizer(Node):
         self.create_subscription(ArucoMarkers, '/aruco_markers', self.pose_callback, 10)
         self.marker_pub = self.create_publisher(MarkerArray, '/detected_targets', 10)
 
+        # Permanent memory for target markers
+        self.saved_markers = []
+        self.marker_id_counter = 0
+
     def pose_callback(self, msg):
-        marker_array = MarkerArray()
         for pose, marker_id in zip(msg.poses, msg.marker_ids):
             try:
-                # Transform from camera to odom frame
+                # Transform from camera to map frame
                 transform = self.tf_buffer.lookup_transform('map', msg.header.frame_id, rclpy.time.Time())
-                
-                # FIX 1: Pass the raw 'pose' directly into the transform
                 global_pose = tf2_geometry_msgs.do_transform_pose(pose, transform)
                 
-                # Format for RViz Visualization
-                marker = Marker()
-                marker.header.frame_id = 'map'
-                marker.ns, marker.id, marker.type = 'aruco', marker_id, Marker.CUBE
+                # 1. Check if we already found this target (within 0.5 meters)
+                is_duplicate = False
+                for saved_marker in self.saved_markers:
+                    dist = ((saved_marker.pose.position.x - global_pose.position.x)**2 + 
+                            (saved_marker.pose.position.y - global_pose.position.y)**2)**0.5
+                    if dist < 0.5:
+                        is_duplicate = True
+                        break
                 
-                # FIX 2: Assign the transformed pose directly (no .pose needed)
-                marker.pose = global_pose 
-                marker.scale.x = marker.scale.y = 0.1 # 100mm target size
-                marker.scale.z = 0.01
-                marker.color.g = marker.color.a = 1.0 # Solid Green
-                marker_array.markers.append(marker)
-                
-                # FIX 3: Read the coordinates from the raw pose
-                self.get_logger().info(f'Target {marker_id} mapped at X:{global_pose.position.x:.2f} Y:{global_pose.position.y:.2f}')
-                
+                # 2. If it is a new target, create and save it
+                if not is_duplicate:
+                    marker = Marker()
+                    marker.header.frame_id = 'map'
+                    marker.header.stamp = self.get_clock().now().to_msg()
+                    marker.ns = 'aruco_targets'
+                    marker.id = self.marker_id_counter
+                    self.marker_id_counter += 1
+                    marker.type = Marker.CUBE
+                    marker.action = Marker.ADD
+                    
+                    marker.pose = global_pose 
+                    marker.scale.x = marker.scale.y = 0.1 # 100mm target size
+                    marker.scale.z = 0.01
+                    marker.color.g = marker.color.a = 1.0 # Solid Green
+                    
+                    self.saved_markers.append(marker)
+                    self.get_logger().info(f'New Target {marker_id} saved at X:{global_pose.position.x:.2f} Y:{global_pose.position.y:.2f}. Total targets: {len(self.saved_markers)}')
+                    
             except TransformException as e:
                 self.get_logger().warn(f'Missing TF tree: {e}')
         
-        if marker_array.markers:
-            self.marker_pub.publish(marker_array)
+        # 3. Always publish the full list of saved markers
+        if self.saved_markers:
+            marker_array_msg = MarkerArray()
+            marker_array_msg.markers = self.saved_markers
+            self.marker_pub.publish(marker_array_msg)
             
 def main(args=None):
     rclpy.init(args=args)
