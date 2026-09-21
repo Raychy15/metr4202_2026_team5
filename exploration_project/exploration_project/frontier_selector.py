@@ -1,14 +1,10 @@
 import rclpy
 from rclpy.node import Node
 
-#from nav2_msgs.msg import BehaviorTreeLog
-#from geometry_msgs.msg import PoseStamped
-#from std_msgs.msg import Float32MultiArray
-
-from rclpy.action import ActionClient
-
-from nav2_msgs.action import NavigateToPose
+from nav2_msgs.msg import BehaviorTreeLog
+from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Float32MultiArray
+
 
 
 class FrontierNavigator(Node):
@@ -25,29 +21,24 @@ class FrontierNavigator(Node):
             10
         )
 
-        # Use Nav2 NavigateToPose action instead of publishing /goal_pose
-        self.nav_client = ActionClient(
-            self,
-            NavigateToPose,
-            'navigate_to_pose'
-        )
+        
         # Create a subscriber to the behavior_tree_log topic
         # The constructor inputs are (message type, topic name, associated
         # callback function, message queue length)
-        # self.subscription = self.create_subscription(
-        #     BehaviorTreeLog,
-        #     'behavior_tree_log',
-        #     self.bt_log_callback,
-        #     10)
-        # self.subscription  # prevent unused variable warning
+        self.subscription = self.create_subscription(
+            BehaviorTreeLog,
+            'behavior_tree_log',
+            self.bt_log_callback,
+            10)
+        self.subscription  # prevent unused variable warning
 
         # Create a publisher
         # The constructor inputs are (message type, topic name, message queue
         # length)
-        # self.publisher_ = self.create_publisher(
-        #     PoseStamped,
-        #     'goal_pose',
-        #     10)
+        self.publisher_ = self.create_publisher(
+            PoseStamped,
+            'goal_pose',
+            10)
 
         # Keep track of the number of waypoints sent
         self.waypoint_counter = 0
@@ -61,6 +52,19 @@ class FrontierNavigator(Node):
 
         # Current goal
         self.current_goal = None
+
+        # Keep track of when current goal was sent
+        self.goal_start_time = None
+
+        # Maximum time allowed for one frontier
+        self.goal_timeout = 30.0
+
+         # Check for a stuck goal once per second
+        self.timer = self.create_timer(
+            1.0,
+            self.check_goal_timeout
+        )
+
 
         # # Manually input the two waypoints
         # # Best practice would be to put these in a config file that's read in
@@ -166,33 +170,34 @@ class FrontierNavigator(Node):
         
         x, y, size = frontier  
 
-        # goal = PoseStamped()
+        goal = PoseStamped()
 
-        # goal.header.frame_id = 'map'
-        # goal.header.stamp = self.get_clock().now().to_msg()
+        goal.header.frame_id = 'map'
+        goal.header.stamp = self.get_clock().now().to_msg()
 
-        # goal.pose.position.x = x
-        # goal.pose.position.y = y
+        goal.pose.position.x = x
+        goal.pose.position.y = y
 
         # # No particular heading required
-        # goal.pose.orientation.w = 1.0
+        goal.pose.orientation.w = 1.0
 
-        #self.publisher_.publish(goal)
+        self.publisher_.publish(goal)
 
         self.goal_active = True
         self.current_goal = (x, y)
 
-        # Create Nav2 goal
-        goal = NavigateToPose.Goal()
+        # Store the time the goal was sent
+        self.goal_start_time = self.get_clock().now()
 
-        goal.pose.header.frame_id = 'map'
-        goal.pose.header.stamp = self.get_clock().now().to_msg()
+        # # Create Nav2 goal
+        # goal = NavigateToPose.Goal()
 
-        goal.pose.pose.position.x = x
-        goal.pose.pose.position.y = y
+        # goal.pose.header.frame_id = 'map'
+        # goal.pose.header.stamp = self.get_clock().now().to_msg()
 
-        # No particular heading required
-        goal.pose.pose.orientation.w = 1.0
+        # goal.pose.pose.position.x = x
+        # goal.pose.pose.position.y = y
+
 
         self.get_logger().info(
             'Sent frontier goal: '
@@ -200,85 +205,64 @@ class FrontierNavigator(Node):
             % (x, y, size)
         )
 
-        # Wait for Nav2 action server
-        if not self.nav_client.wait_for_server(timeout_sec=2.0):
 
-            self.get_logger().info(
-                'Nav2 action server not available'
-            )
 
-            self.goal_active = False
+    def bt_log_callback(self, msg: BehaviorTreeLog):
+
+
+        # Check behaviour tree for completed navigation
+        for event in msg.event_log:
+
+            if (event.node_name == 'NavigateRecovery'
+                    and event.current_status == 'IDLE'):
+
+                # Only do this if we actually have an active goal
+                if not self.goal_active:
+                    continue
+
+                self.get_logger().info(
+                    'Navigation finished - selecting new frontier'
+                )
+
+                self.goal_active = False
+                self.current_goal = None
+                self.goal_start_time = None
+                # Latest map/frontiers will be used
+                # if len(self.frontiers) > 0:
+                #     self.send_waypoint()
+
+
+    def check_goal_timeout(self):
+
+        # Nothing to check if there is no active goal
+        if not self.goal_active:
             return
 
-        # Send goal to Nav2
-        future = self.nav_client.send_goal_async(goal)
+        if self.goal_start_time is None:
+            return
 
-        future.add_done_callback(
-            self.goal_response_callback
-        )
+        elapsed = (
+            self.get_clock().now() -
+            self.goal_start_time
+        ).nanoseconds / 1e9
 
-
-    def goal_response_callback(self, future):
-
-        goal_handle = future.result()
-
-        # Nav2 rejected the goal
-        if not goal_handle.accepted:
+        # Robot has spent too long trying the same frontier
+        if elapsed > self.goal_timeout:
 
             self.get_logger().info(
-                'Frontier goal was rejected'
+                'Frontier timed out - blacklisting it'
             )
 
             self.blacklist_current_goal()
 
             self.goal_active = False
             self.current_goal = None
-            self.send_waypoint()
+            self.goal_start_time = None
 
-            return
+            # # Try a different frontier
+            # if len(self.frontiers) > 0:
+            #     self.send_waypoint()
 
-        self.get_logger().info(
-            'Frontier goal accepted'
-        )
-
-        # Wait for navigation to finish
-        result_future = goal_handle.get_result_async()
-
-        result_future.add_done_callback(
-        self.navigation_result_callback
-        )
-
-
-    def navigation_result_callback(self, future):
-
-        result = future.result()
-
-        # ROS action status:
-        # 4 = succeeded
-        # 5 = cancelled
-        # 6 = aborted
-
-        if result.status == 4:
-
-            self.get_logger().info(
-                'Frontier reached successfully'
-            )
-
-        else:
-
-            self.get_logger().info(
-                'Could not reach frontier - blacklisting it'
-            )
-
-            self.blacklist_current_goal()
-
-        # Robot is no longer navigating
-        self.goal_active = False
-        self.current_goal = None
-
-        # Try the next available frontier
-        if len(self.frontiers) > 0:
-            self.send_waypoint()
 
 
     def blacklist_current_goal(self):
