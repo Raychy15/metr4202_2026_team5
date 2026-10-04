@@ -6,6 +6,7 @@ from rclpy.node import Node
 #from nav2_msgs.msg import BehaviorTreeLog
 from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Float32MultiArray
+from tf2_ros import Buffer, TransformListener
 
 
 
@@ -24,6 +25,14 @@ class FrontierNavigator(Node):
             self.frontier_callback,
             10
         )
+
+        # Get robot position from TF
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(
+            self.tf_buffer,
+            self
+        )
+
 
         
 
@@ -58,6 +67,21 @@ class FrontierNavigator(Node):
         # Current goal
         self.current_goal = None
 
+        # Current robot position
+        self.robot_position = None
+
+        # Position robot can return to if it gets stuck
+        self.previous_position = None
+
+        # is robot going back to previous position (got stuck)
+        self.recovering = False
+
+        # Time recovery started
+        self.recovery_start_time = None
+
+        # Give robot time to return to previous position
+        self.recovery_time = 8.0
+
         # Keep track of when current goal was sent
         self.goal_start_time = None
 
@@ -69,6 +93,30 @@ class FrontierNavigator(Node):
             1.0,
             self.check_goal_timeout
         )
+
+
+    def get_robot_position(self):
+
+        try:
+
+            transform = self.tf_buffer.lookup_transform(
+                'map',
+                'base_link',
+                rclpy.time.Time()
+            )
+
+            x = transform.transform.translation.x
+            y = transform.transform.translation.y
+
+            return (x, y)
+
+        except Exception as e:
+
+            self.get_logger().info(
+                'Could not get robot position'
+            )
+
+            return None
 
 
     def frontier_callback(self, msg: Float32MultiArray):
@@ -94,8 +142,8 @@ class FrontierNavigator(Node):
             % len(self.frontiers)
         )
 
-        # Send a goal if one is not already active
-        if not self.goal_active and len(self.frontiers) > 0:
+        # Send a goal if one is not already active and robot is not in recovery
+        if (not self.goal_active and not self.recovering and len(self.frontiers) > 0):
             self.send_waypoint()
 
 
@@ -168,6 +216,13 @@ class FrontierNavigator(Node):
         # # No particular heading required
         goal.pose.orientation.w = 1.0
 
+        # Get current robot position in map frame
+        self.robot_position = self.get_robot_position()
+        
+        # Save where the robot was before attempting this frontier
+        if self.robot_position is not None:
+            self.previous_position = self.robot_position
+
         self.publisher_.publish(goal)
 
         self.goal_active = True
@@ -221,6 +276,25 @@ class FrontierNavigator(Node):
 
     def check_goal_timeout(self):
 
+        # Check whether recovery period has finished
+        if self.recovering:
+
+            elapsed_recovery = (
+                time.monotonic()
+                - self.recovery_start_time
+            )
+
+            if elapsed_recovery >= self.recovery_time:
+
+                self.get_logger().info(
+                    'Recovery finished - resuming exploration'
+                )
+
+                self.recovering = False
+                self.recovery_start_time = None
+
+            return
+        
         # Nothing to check if there is no active goal
         if not self.goal_active:
             return
@@ -241,14 +315,49 @@ class FrontierNavigator(Node):
         if elapsed >= self.goal_timeout:
 
             self.get_logger().info(
-            'Frontier timed out - blacklisting it'
-            )
-
+            'Frontier timed out - blacklisting it and starting recov'
+            )   
+            #remember this frontier caused issues
             self.blacklist_current_goal()
 
             self.goal_active = False
             self.current_goal = None
             self.goal_start_time = None
+
+            # Return towards previous safe position
+            self.start_recovery()
+
+
+    def start_recovery(self):
+
+        if self.previous_position is None:
+
+            self.get_logger().info(
+                'No previous position available for recovery'
+            )
+
+            return
+
+        x, y = self.previous_position
+
+        recovery_goal = PoseStamped()
+
+        recovery_goal.header.frame_id = 'map'
+        recovery_goal.header.stamp = self.get_clock().now().to_msg()
+
+        recovery_goal.pose.position.x = x
+        recovery_goal.pose.position.y = y
+        recovery_goal.pose.orientation.w = 1.0
+
+        self.publisher_.publish(recovery_goal)
+
+        self.recovering = True
+        self.recovery_start_time = time.monotonic()
+
+        self.get_logger().info(
+            'Recovery - returning to x=%.2f, y=%.2f'
+            % (x, y)
+        )
 
 
 
