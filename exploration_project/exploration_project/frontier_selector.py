@@ -117,7 +117,7 @@ class FrontierNavigator(Node):
             return (x, y)
 
         except Exception as e:
-
+            #error
             self.get_logger().info(
                 'Could not get robot position: %s'
                 % str(e)
