@@ -230,13 +230,41 @@ class FrontierNavigator(Node):
         if self.robot_position is not None:
             self.previous_position = self.robot_position
 
+        # self.publisher_.publish(goal)
+
+        # self.goal_active = True
+        # self.current_goal = (x, y)
+
+        # # Start checking movement from current robot position
+        # self.last_robot_position = self.robot_position
+
+        # if self.robot_position is None:
+        #     self.get_logger().info(
+        #         'Cannot send goal - robot position unavailable'
+        #     )
+        #     return
+        # Get current robot position in map frame
+        self.robot_position = self.get_robot_position()
+
+        if self.robot_position is None:
+            self.get_logger().info(
+                'Cannot send goal - robot position unavailable'
+            )
+            return
+
+        # Save position before attempting frontier
+        self.previous_position = self.robot_position
+
+        # Publish frontier goal
         self.publisher_.publish(goal)
 
         self.goal_active = True
         self.current_goal = (x, y)
 
-        # Start checking movement from current robot position
+        # Start checking movement
         self.last_robot_position = self.robot_position
+
+
         self.last_movement_time = time.monotonic()
 
         # # Create Nav2 goal
@@ -287,6 +315,35 @@ class FrontierNavigator(Node):
         # Check whether recovery period has finished
         if self.recovering:
 
+            current_position = self.get_robot_position()
+
+            if current_position is not None and self.previous_position is not None:
+
+                x, y = current_position
+                target_x, target_y = self.previous_position
+
+                # Distance from robot to recovery position
+                distance = (
+                    (x - target_x) ** 2
+                    + (y - target_y) ** 2
+                ) ** 0.5
+
+                # Robot has returned close enough
+                if distance < 0.20:
+
+                    self.get_logger().info(
+                        'Recovery position reached - resuming exploration'
+                    )
+
+                    self.recovering = False
+                    self.recovery_start_time = None
+
+                    self.last_robot_position = None
+                    self.last_movement_time = None
+
+                    return
+
+            # Check if recovery is taking too long
             elapsed_recovery = (
                 time.monotonic()
                 - self.recovery_start_time
@@ -294,31 +351,27 @@ class FrontierNavigator(Node):
 
             if elapsed_recovery >= self.recovery_time:
 
-                self.get_logger().info(
-                    'Recovery finished - resuming exploration'
+                self.get_logger().warning(
+                    'Recovery timed out - robot may still be stuck'
                 )
 
-                self.recovering = False
-                self.recovery_start_time = None
-
-                # Reset movement check
-                self.last_robot_position = None
-                self.last_movement_time = None
+                # Stop repeating the warning every second
+                self.recovery_start_time = time.monotonic()
 
             return
-        
+
+            
+        #check normal nav
+
         # Nothing to check if there is no active goal
         if not self.goal_active:
             return
-
-
+        
         # Get current robot position in map frame
         current_position = self.get_robot_position()
 
         if current_position is None:
             return
-
-
         # First position measurement
         if self.last_robot_position is None:
 
@@ -326,8 +379,7 @@ class FrontierNavigator(Node):
             self.last_movement_time = time.monotonic()
 
             return
-
-
+        
         current_x, current_y = current_position
         last_x, last_y = self.last_robot_position
 
