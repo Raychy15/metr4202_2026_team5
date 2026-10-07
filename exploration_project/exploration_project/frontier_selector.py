@@ -82,11 +82,17 @@ class FrontierNavigator(Node):
         # Give robot time to return to previous position
         self.recovery_time = 8.0
 
-        # Keep track of when current goal was sent
-        self.goal_start_time = None
+        # Used to check whether robot has become stuck
+        self.last_robot_position = None
 
-        # Maximum time allowed for one frontier up for change
-        self.goal_timeout = 15.0
+        # Time robot was last seen moving
+        self.last_movement_time = None
+
+        # Minimum movement needed to count as moving
+        self.minimum_movement = 0.15
+
+        # How long robot can stay in same area before recovery
+        self.stuck_timeout = 8.0
 
          # Check for a stuck goal once per second
         self.timer = self.create_timer(
@@ -113,7 +119,8 @@ class FrontierNavigator(Node):
         except Exception as e:
 
             self.get_logger().info(
-                'Could not get robot position'
+                'Could not get robot position: %s'
+                % str(e)
             )
 
             return None
@@ -165,8 +172,8 @@ class FrontierNavigator(Node):
                     + (y - failed_y) ** 2
                 ) ** 0.5
 
-                #ignore anything within 0.5m of previous failed fronter
-                if distance < 0.5:
+                #ignore anything within 0.3m of previous failed fronter
+                if distance < 0.3:
                     failed = True
                     break
 
@@ -218,7 +225,7 @@ class FrontierNavigator(Node):
 
         # Get current robot position in map frame
         self.robot_position = self.get_robot_position()
-        
+
         # Save where the robot was before attempting this frontier
         if self.robot_position is not None:
             self.previous_position = self.robot_position
@@ -228,8 +235,9 @@ class FrontierNavigator(Node):
         self.goal_active = True
         self.current_goal = (x, y)
 
-        # Store the time the goal was sent
-        self.goal_start_time = time.monotonic()
+        # Start checking movement from current robot position
+        self.last_robot_position = self.robot_position
+        self.last_movement_time = time.monotonic()
 
         # # Create Nav2 goal
         # goal = NavigateToPose.Goal()
@@ -293,36 +301,91 @@ class FrontierNavigator(Node):
                 self.recovering = False
                 self.recovery_start_time = None
 
+                # Reset movement check
+                self.last_robot_position = None
+                self.last_movement_time = None
+
             return
         
         # Nothing to check if there is no active goal
         if not self.goal_active:
             return
 
-        if self.goal_start_time is None:
+
+        # Get current robot position in map frame
+        current_position = self.get_robot_position()
+
+        if current_position is None:
             return
 
-        # Calculate real time since goal was sent
-        elapsed = time.monotonic() - self.goal_start_time
 
-        # Print time for testing
-        self.get_logger().info(
-        'Goal active for %.1f seconds'
-        % elapsed
-        )
+        # First position measurement
+        if self.last_robot_position is None:
 
-    # Robot has spent too long on this frontier
-        if elapsed >= self.goal_timeout:
+            self.last_robot_position = current_position
+            self.last_movement_time = time.monotonic()
+
+            return
+
+
+        current_x, current_y = current_position
+        last_x, last_y = self.last_robot_position
+
+
+        # Calculate how far robot has moved
+        distance_moved = (
+            (current_x - last_x) ** 2
+            + (current_y - last_y) ** 2
+        ) ** 0.5
+
+
+        # Robot has moved enough
+        if distance_moved >= self.minimum_movement:
+
+            self.last_robot_position = current_position
+            self.last_movement_time = time.monotonic()
 
             self.get_logger().info(
-            'Frontier timed out - blacklisting it and starting recov'
-            )   
-            #remember this frontier caused issues
+                'Robot moving - %.2f m since last check'
+                % distance_moved
+            )
+
+            return
+
+
+        # Robot has not moved enough
+        if self.last_movement_time is None:
+            self.last_movement_time = time.monotonic()
+            return
+
+
+        time_stuck = (
+            time.monotonic()
+            - self.last_movement_time
+        )
+
+
+        self.get_logger().info(
+            'Robot movement low for %.1f seconds'
+            % time_stuck
+        )
+
+
+        # Robot has remained in same area too long
+        if time_stuck >= self.stuck_timeout:
+
+            self.get_logger().info(
+                'Robot appears stuck - starting recovery'
+            )
+
+            # Remember this frontier caused a problem
             self.blacklist_current_goal()
 
             self.goal_active = False
             self.current_goal = None
-            self.goal_start_time = None
+
+            self.last_robot_position = None
+            self.last_movement_time = None
 
             # Return towards previous safe position
             self.start_recovery()
