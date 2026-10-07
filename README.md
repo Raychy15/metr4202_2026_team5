@@ -14,8 +14,8 @@ Create a workspace, download the third-party `ros2_aruco` package from source, a
 
 ```bash
 cd ~/turtlebot3_ws/src
-git clone [https://github.com/JMU-Robotics-Group/ros2_aruco.git]
-git clone [https://github.com/Raychy15/metr4202_2026_team5.git]
+git clone [https://github.com/JMU-ROBOTICS-VIVA/ros2_aruco]
+git clone [https://github.com/Raychy15/metr4202_2026_team5]
 ```
 
 ## Build Instructions
@@ -34,7 +34,7 @@ source install/setup.bash
 
 3. Launch Nav2
 	export TURTLEBOT3_MODEL=waffle_pi
-	ros2 launch ros2 launch turtlebot3_navigation2 navigation2.launch.py use_sim_time:=true
+	ros2 launch turtlebot3_navigation2 navigation2.launch.py use_sim_time:=true
 
 4. Launch Exploration Package
 	cd ~/turtlebot3_ws
