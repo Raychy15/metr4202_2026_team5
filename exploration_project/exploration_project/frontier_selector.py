@@ -408,9 +408,18 @@ class FrontierNavigator(Node):
                 self.get_logger().warning(
                     'Recovery timed out - robot may still be stuck'
                 )
+                self.recovering = False
+                self.recovery_start_time = None
+
+                self.goal_active = False
+                self.current_goal = None
+
+                self.last_robot_position = None
+                self.last_robot_yaw = None
+                self.last_movement_time = None
 
                 # Stop repeating the warning every second
-                self.recovery_start_time = time.monotonic()
+                #self.recovery_start_time = time.monotonic()
 
             return
 
