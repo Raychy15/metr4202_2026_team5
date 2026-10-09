@@ -197,9 +197,10 @@ class FrontierNavigator(Node):
 
         if not available_frontiers:
             self.get_logger().warning(
-                'No suitable frontier: all candidates blacklisted'
+                'All candidates blacklisted - clearing blacklist and retrying'
             )
-            return None
+            self.failed_frontiers.clear()
+            available_frontiers = list(self.frontiers)
 
         # If robot position is unavailable, use largest frontier
         if robot_position is None:
