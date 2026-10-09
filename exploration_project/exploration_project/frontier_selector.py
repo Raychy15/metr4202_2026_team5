@@ -157,19 +157,14 @@ class FrontierNavigator(Node):
     #might change later depending on how tests go
     def choose_frontier(self):
         
-        # Get robot position in map frame
-        robot_position = self.get_robot_position()
-
-        if robot_position is None:
-            self.get_logger().info(
-                'Cannot choose frontier - robot position unavailable'
-            )
+        if not self.frontiers:
+            self.get_logger().warning('No frontier candidates received')
             return None
 
-        robot_x, robot_y = robot_position
+        robot_position = self.get_robot_position()
 
-        best_frontier = None
-        best_score = -1
+        # Keep only frontiers that are not blacklisted
+        available_frontiers = []
 
         
         # Sort all available frontiers by size (largest first)
@@ -179,44 +174,63 @@ class FrontierNavigator(Node):
 
             x, y, size = frontier
 
-            failed = False
-            #need to check frontiers close to failed ones to try prevent loop
-            for failed_x, failed_y in self.failed_frontiers:
+            is_blacklisted = False
 
-                failed_distance = (
-                    (x - failed_x) ** 2
-                    + (y - failed_y) ** 2
+            for failed_x, failed_y in self.failed_frontiers:
+                distance_to_failed = (
+                    (x - failed_x) ** 2 +
+                    (y - failed_y) ** 2
                 ) ** 0.5
 
-                #ignore anything within 0.3m of previous failed fronter
-                if failed_distance < 0.3:
-                    failed = True
+                if distance_to_failed < 0.3:
+                    is_blacklisted = True
                     break
 
-            #use frontier that has not failed
-            if failed:
-                continue
+            if not is_blacklisted:
+                available_frontiers.append(frontier)
 
-            # Distance from robot to frontier
+        self.get_logger().info(
+            f'Frontiers: {len(self.frontiers)} received, '
+            f'{len(available_frontiers)} available, '
+            f'{len(self.failed_frontiers)} blacklisted positions'
+        )
+
+        if not available_frontiers:
+            self.get_logger().warning(
+                'No suitable frontier: all candidates blacklisted'
+            )
+            return None
+
+        # If robot position is unavailable, use largest frontier
+        if robot_position is None:
+            self.get_logger().warning(
+                'Robot position unavailable - using largest frontier'
+            )
+            return max(available_frontiers, key=lambda f: f[2])
+
+        robot_x, robot_y = robot_position
+
+        best_frontier = None
+        best_score = float('-inf')
+
+        for frontier in available_frontiers:
+            x, y, size = frontier
+
             distance = (
-                (x - robot_x) ** 2
-                + (y - robot_y) ** 2
+                (x - robot_x) ** 2 +
+                (y - robot_y) ** 2
             ) ** 0.5
 
-            # Balance frontier size and distance
             score = size / (distance + 1.0)
 
-            self.get_logger().info(
-                'Frontier x=%.2f, y=%.2f, size=%.0f, '
-                'distance=%.2f, score=%.2f'
-                % (x, y, size, distance, score)
-            )
-
-            # Keep the frontier with the highest score
             if score > best_score:
-
                 best_score = score
                 best_frontier = frontier
+
+        self.get_logger().info(
+            f'Selected frontier: {best_frontier}, '
+            f'score: {best_score:.2f}'
+        )
 
         return best_frontier
 
