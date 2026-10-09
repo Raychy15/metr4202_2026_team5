@@ -1,5 +1,6 @@
 import rclpy
 import time
+import math
 
 from rclpy.node import Node
 
@@ -80,7 +81,7 @@ class FrontierNavigator(Node):
         self.recovery_start_time = None
 
         # Give robot time to return to previous position
-        self.recovery_time = 8.0
+        self.recovery_time = 15.0
 
         # Used to check whether robot has become stuck
         self.last_robot_position = None
