@@ -156,10 +156,26 @@ class FrontierNavigator(Node):
 
     #might change later depending on how tests go
     def choose_frontier(self):
-        # Sort all available frontiers by size (largest first)
-        sorted_frontiers = sorted(self.frontiers, key=lambda f: f[2], reverse=True)
         
-        for frontier in sorted_frontiers:
+        # Get robot position in map frame
+        robot_position = self.get_robot_position()
+
+        if robot_position is None:
+            self.get_logger().info(
+                'Cannot choose frontier - robot position unavailable'
+            )
+            return None
+
+        robot_x, robot_y = robot_position
+
+        best_frontier = None
+        best_score = -1
+
+        
+        # Sort all available frontiers by size (largest first)
+        #sorted_frontiers = sorted(self.frontiers, key=lambda f: f[2], reverse=True)
+        
+        for frontier in self.frontiers:
 
             x, y, size = frontier
 
@@ -167,21 +183,43 @@ class FrontierNavigator(Node):
             #need to check frontiers close to failed ones to try prevent loop
             for failed_x, failed_y in self.failed_frontiers:
 
-                distance = (
+                failed_distance = (
                     (x - failed_x) ** 2
                     + (y - failed_y) ** 2
                 ) ** 0.5
 
                 #ignore anything within 0.3m of previous failed fronter
-                if distance < 0.3:
+                if failed_distance < 0.3:
                     failed = True
                     break
 
             #use frontier that has not failed
-            if not failed:
-                return frontier
+            if failed:
+                continue
 
-        return None
+            # Distance from robot to frontier
+            distance = (
+                (x - robot_x) ** 2
+                + (y - robot_y) ** 2
+            ) ** 0.5
+
+            # Balance frontier size and distance
+            score = size / (distance + 1.0)
+
+            self.get_logger().info(
+                'Frontier x=%.2f, y=%.2f, size=%.0f, '
+                'distance=%.2f, score=%.2f'
+                % (x, y, size, distance, score)
+            )
+
+            # Keep the frontier with the highest score
+            if score > best_score:
+
+                best_score = score
+                best_frontier = frontier
+
+        return best_frontier
+
 
 
             # # If the robot just attempted this general area, skip it to prevent infinite loops
