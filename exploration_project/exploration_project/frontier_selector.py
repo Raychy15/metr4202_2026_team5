@@ -523,25 +523,7 @@ class FrontierNavigator(Node):
             if current_position is None:
                 return
 
-            if self.current_goal is not None:
-                distance_to_goal = math.hypot(
-                    current_position[0] - self.current_goal[0],
-                    current_position[1] - self.current_goal[1]
-                )
-
-                if distance_to_goal < 0.3:
-                    self.visited_frontiers.append(self.current_goal)
-
-                    self.get_logger().info(
-                        'Frontier reached - marking as visited'
-                    )
-
-                    self.goal_active = False
-                    self.current_goal = None
-                    self.last_robot_position = None
-                    self.last_movement_time = None
-                    return
-
+            
 
             if current_position is not None and self.previous_position is not None:
 
@@ -607,6 +589,27 @@ class FrontierNavigator(Node):
 
         if current_position is None:
             return
+
+        if self.current_goal is not None:
+            distance_to_goal = math.hypot(
+                current_position[0] - self.current_goal[0],
+                current_position[1] - self.current_goal[1]
+            )
+
+            if distance_to_goal < 0.3:
+                self.visited_frontiers.append(self.current_goal)
+
+                self.get_logger().info(
+                    'Frontier reached - marking as visited'
+                )
+
+                self.goal_active = False
+                self.current_goal = None
+                self.last_robot_position = None
+                self.last_movement_time = None
+                return
+        
+        
         # First position measurement
         if self.last_robot_position is None:
 
