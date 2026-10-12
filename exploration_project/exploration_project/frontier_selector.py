@@ -216,10 +216,8 @@ class FrontierNavigator(Node):
 
         if not available_frontiers:
             self.get_logger().warning(
-                'All candidates blacklisted - clearing blacklist and retrying'
+                'All candidates blacklisted - waiting for another frontier'
             )
-            #self.failed_frontiers.clear()
-            #available_frontiers = list(self.frontiers)
             return None
 
         # If robot position is unavailable, use largest frontier
@@ -524,7 +522,14 @@ class FrontierNavigator(Node):
             self.last_movement_time = None
 
             # Return towards previous safe position
-            self.start_recovery()
+            #self.start_recovery()
+            # Stop tracking the failed goal and allow a new frontier
+            self.recovering = False
+            self.recovery_start_time = None
+
+            self.get_logger().info(
+                'Navigation stalled - selecting a different frontier'
+            )
 
 
     def start_recovery(self):
