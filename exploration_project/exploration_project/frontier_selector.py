@@ -265,6 +265,9 @@ class FrontierNavigator(Node):
             )
 
             if already_visited:
+                self.get_logger().info(
+                    f'Rejected frontier ({x:.2f}, {y:.2f}): already visited'
+                )
                 continue
 
             is_blacklisted = False
@@ -304,12 +307,19 @@ class FrontierNavigator(Node):
         robot_x, robot_y = robot_position
 
         best_frontier = None
-        best_score = float('-inf')
+        best_score = float('inf')
+
+        # Weights for distance and frontier size
+        distance_weight = 1.0
+        size_weight = 0.02
 
         for frontier in available_frontiers:
             x, y, size = frontier
 
             if not self.has_unexplored_area(x, y):
+                self.get_logger().info(
+                    f'Rejected frontier ({x:.2f}, {y:.2f}): insufficient unexplored area'
+                )
                 continue
 
             distance = (
@@ -317,9 +327,12 @@ class FrontierNavigator(Node):
                 (y - robot_y) ** 2
             ) ** 0.5
 
-            score = size / max(distance, 0.3)
+            score = (
+                distance_weight * distance
+                - size_weight * size
+            )
 
-            if score > best_score:
+            if score < best_score:
                 best_score = score
                 best_frontier = frontier
 
@@ -466,6 +479,9 @@ class FrontierNavigator(Node):
         if self.recovering:
 
             current_position = self.get_robot_position()
+
+            if current_position is None:
+                return
 
             if self.current_goal is not None:
                 distance_to_goal = math.hypot(
