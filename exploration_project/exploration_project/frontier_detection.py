@@ -149,6 +149,7 @@ class frontierDetector(Node):
                     return True
         return False
 
+
     def cluster_frontiers(self, frontier_cells):
         #for each frontier, if visitied already skip
         # if not, run graph search BFS from that location
@@ -220,6 +221,7 @@ class frontierDetector(Node):
         centre_y = y_total/len(cluster)
 
         return centre_x, centre_y
+
 
     def cell_closest_to_centre(self, cluster, centre_x, centre_y):
 
