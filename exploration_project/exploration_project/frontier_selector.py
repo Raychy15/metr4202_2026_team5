@@ -282,8 +282,21 @@ class FrontierNavigator(Node):
                     is_blacklisted = True
                     break
 
-            if not is_blacklisted:
-                available_frontiers.append(frontier)
+            if is_blacklisted:
+                self.get_logger().info(
+                    f'Rejected frontier ({x:.2f}, {y:.2f}): blacklisted'
+                )
+                continue
+
+             # Ignore frontiers without enough unexplored area
+            if not self.has_unexplored_area(x, y):
+                self.get_logger().info(
+                    f'Rejected frontier ({x:.2f}, {y:.2f}): '
+                    'insufficient unexplored area'
+                )
+                continue
+
+        available_frontiers.append(frontier)
 
         self.get_logger().info(
             f'Frontiers: {len(self.frontiers)} received, '
@@ -293,7 +306,7 @@ class FrontierNavigator(Node):
 
         if not available_frontiers:
             self.get_logger().warning(
-                'All candidates blacklisted - waiting for another frontier'
+                'No suitable frontier passed the filters'
             )
             return None
 
@@ -306,6 +319,29 @@ class FrontierNavigator(Node):
 
         robot_x, robot_y = robot_position
 
+        # NEW: Prefer nearby frontiers before travelling across the map
+        local_radius = 2.0
+
+        local_frontiers = [
+            frontier for frontier in available_frontiers
+            if math.hypot(
+                frontier[0] - robot_x,
+                frontier[1] - robot_y
+            ) <= local_radius
+        ]
+
+        if local_frontiers:
+            available_frontiers = local_frontiers
+
+            self.get_logger().info(
+                f'Prioritising {len(local_frontiers)} '
+                f'frontiers within {local_radius:.1f} m'
+            )
+        else:
+            self.get_logger().info(
+                'No suitable local frontiers - considering all remaining frontiers'
+            )
+
         best_frontier = None
         best_score = float('inf')
 
@@ -315,12 +351,6 @@ class FrontierNavigator(Node):
 
         for frontier in available_frontiers:
             x, y, size = frontier
-
-            if not self.has_unexplored_area(x, y):
-                self.get_logger().info(
-                    f'Rejected frontier ({x:.2f}, {y:.2f}): insufficient unexplored area'
-                )
-                continue
 
             distance = (
                 (x - robot_x) ** 2 +
@@ -332,9 +362,19 @@ class FrontierNavigator(Node):
                 - size_weight * size
             )
 
+            self.get_logger().info(
+                f'Candidate ({x:.2f}, {y:.2f}): '
+                f'distance={distance:.2f}, '
+                f'size={size}, cost={score:.2f}'
+            )
+
             if score < best_score:
                 best_score = score
                 best_frontier = frontier
+
+        if best_frontier is None:
+            self.get_logger().warning('No suitable frontier')
+            return None
 
         self.get_logger().info(
             f'Selected frontier: {best_frontier}, '
