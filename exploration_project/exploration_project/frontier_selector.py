@@ -8,7 +8,7 @@ from rclpy.node import Node
 from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Float32MultiArray
 from tf2_ros import Buffer, TransformListener
-
+from visualization_msgs.msg import Marker, MarkerArray
 
 
 
@@ -35,7 +35,10 @@ class FrontierNavigator(Node):
         )
 
 
-        
+        self.marker_timer = self.create_timer(
+            0.5,
+            self.publish_active_goal_marker
+        )
 
         # Create a subscriber to the behavior_tree_log topic
         # The constructor inputs are (message type, topic name, associated
@@ -55,6 +58,19 @@ class FrontierNavigator(Node):
             'goal_pose',
             10)
 
+
+        # RViz waypoint visualisation
+        self.frontier_marker_pub = self.create_publisher(
+            MarkerArray,
+            '/frontier_markers',
+            10
+        )
+
+        self.active_goal_marker_pub = self.create_publisher(
+            Marker,
+            '/active_frontier_goal',
+            10
+        )
         # Keep track of the number of waypoints sent
         self.waypoint_counter = 0
 
@@ -149,6 +165,8 @@ class FrontierNavigator(Node):
             'Received %d frontier candidates'
             % len(self.frontiers)
         )
+
+        self.publish_frontier_markers()
 
         # Send a goal if one is not already active and robot is not in recovery
         if (not self.goal_active and not self.recovering and len(self.frontiers) > 0):
@@ -315,6 +333,8 @@ class FrontierNavigator(Node):
 
         self.goal_active = True
         self.current_goal = (x, y)
+
+        self.publish_active_goal_marker()
 
         # Start checking movement
         self.last_robot_position = self.robot_position
@@ -554,6 +574,79 @@ class FrontierNavigator(Node):
             )
 
 
+    def publish_frontier_markers(self):
+        markers = MarkerArray()
+
+        # Clear old markers before drawing the new candidates
+        clear = Marker()
+        clear.header.frame_id = 'map'
+        clear.header.stamp = self.get_clock().now().to_msg()
+        clear.action = Marker.DELETEALL
+        markers.markers.append(clear)
+
+        for i, (x, y, size) in enumerate(self.frontiers):
+            marker = Marker()
+            marker.header.frame_id = 'map'
+            marker.header.stamp = self.get_clock().now().to_msg()
+
+            marker.ns = 'frontiers'
+            marker.id = i
+            marker.type = Marker.SPHERE
+            marker.action = Marker.ADD
+
+            marker.pose.position.x = float(x)
+            marker.pose.position.y = float(y)
+            marker.pose.position.z = 0.1
+            marker.pose.orientation.w = 1.0
+
+            marker.scale.x = 0.12
+            marker.scale.y = 0.12
+            marker.scale.z = 0.12
+
+            # Blue = detected frontier
+            marker.color.r = 0.0
+            marker.color.g = 0.4
+            marker.color.b = 1.0
+            marker.color.a = 0.9
+
+            markers.markers.append(marker)
+
+        self.frontier_marker_pub.publish(markers)
+
+
+    def publish_active_goal_marker(self):
+        marker = Marker()
+        marker.header.frame_id = 'map'
+        marker.header.stamp = self.get_clock().now().to_msg()
+
+        marker.ns = 'active_goal'
+        marker.id = 0
+
+        if self.current_goal is None or not self.goal_active:
+            marker.action = Marker.DELETE
+        else:
+            marker.type = Marker.SPHERE
+            marker.action = Marker.ADD
+
+            marker.pose.position.x = float(self.current_goal[0])
+            marker.pose.position.y = float(self.current_goal[1])
+            marker.pose.position.z = 0.2
+            marker.pose.orientation.w = 1.0
+
+            marker.scale.x = 0.25
+            marker.scale.y = 0.25
+            marker.scale.z = 0.25
+
+            # Green = active goal
+            marker.color.r = 0.0
+            marker.color.g = 1.0
+            marker.color.b = 0.0
+            marker.color.a = 1.0
+
+        self.active_goal_marker_pub.publish(marker)
+
+
+    
 def main(args=None):
     rclpy.init(args=args)
 

@@ -5,6 +5,7 @@ from nav_msgs.msg import OccupancyGrid
 from std_msgs.msg import Float32MultiArray
 
 
+
 def main(args=None):
     rclpy.init(args=args)
 
