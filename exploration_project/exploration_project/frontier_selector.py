@@ -9,6 +9,7 @@ from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Float32MultiArray
 from tf2_ros import Buffer, TransformListener
 from visualization_msgs.msg import Marker, MarkerArray
+from nav_msgs.msg import OccupancyGrid
 
 
 
@@ -38,6 +39,17 @@ class FrontierNavigator(Node):
         self.marker_timer = self.create_timer(
             0.5,
             self.publish_active_goal_marker
+        )
+
+        self.map_msg = None
+        self.unknown_check_radius = 0.5
+        self.minimum_unknown_cells = 10
+
+        self.map_subscription = self.create_subscription(
+            OccupancyGrid,
+            '/map',
+            self.map_callback,
+            10
         )
 
         # Create a subscriber to the behavior_tree_log topic
@@ -78,6 +90,9 @@ class FrontierNavigator(Node):
         self.frontiers = []
         self.failed_frontiers = []
 
+        self.visited_frontiers = []
+        self.visited_radius = 0.5
+
         # Track whether a goal was already set
         self.goal_active = False
 
@@ -116,6 +131,56 @@ class FrontierNavigator(Node):
             1.0,
             self.check_goal_timeout
         )
+
+    def map_callback(self, msg):
+        self.map_msg = msg
+
+
+    def has_unexplored_area(self, x, y):
+        if self.map_msg is None:
+            return False
+
+        info = self.map_msg.info
+        width = info.width
+        height = info.height
+        resolution = info.resolution
+
+        if resolution <= 0:
+            return False
+
+        origin_x = info.origin.position.x
+        origin_y = info.origin.position.y
+
+        grid_x = int((x - origin_x) / resolution)
+        grid_y = int((y - origin_y) / resolution)
+
+        radius = max(
+            1, int(self.unknown_check_radius / resolution)
+        )
+
+        unknown_count = 0
+
+        for dy in range(-radius, radius + 1):
+            for dx in range(-radius, radius + 1):
+
+                if dx * dx + dy * dy > radius * radius:
+                    continue
+
+                nx = grid_x + dx
+                ny = grid_y + dy
+
+                if not (0 <= nx < width and 0 <= ny < height):
+                    continue
+
+                index = ny * width + nx
+
+                if self.map_msg.data[index] == -1:
+                    unknown_count += 1
+
+                    if unknown_count >= self.minimum_unknown_cells:
+                        return True
+
+        return False
 
 
     def get_robot_position(self):
@@ -193,6 +258,15 @@ class FrontierNavigator(Node):
 
             x, y, size = frontier
 
+            # Ignore frontiers near locations already visited
+            already_visited = any(
+                math.hypot(x - vx, y - vy) < self.visited_radius
+                for vx, vy in self.visited_frontiers
+            )
+
+            if already_visited:
+                continue
+
             is_blacklisted = False
 
             for failed_x, failed_y in self.failed_frontiers:
@@ -235,12 +309,15 @@ class FrontierNavigator(Node):
         for frontier in available_frontiers:
             x, y, size = frontier
 
+            if not self.has_unexplored_area(x, y):
+                continue
+
             distance = (
                 (x - robot_x) ** 2 +
                 (y - robot_y) ** 2
             ) ** 0.5
 
-            score = size / (distance + 1.0)
+            score = size / max(distance, 0.3)
 
             if score > best_score:
                 best_score = score
@@ -389,6 +466,26 @@ class FrontierNavigator(Node):
         if self.recovering:
 
             current_position = self.get_robot_position()
+
+            if self.current_goal is not None:
+                distance_to_goal = math.hypot(
+                    current_position[0] - self.current_goal[0],
+                    current_position[1] - self.current_goal[1]
+                )
+
+                if distance_to_goal < 0.3:
+                    self.visited_frontiers.append(self.current_goal)
+
+                    self.get_logger().info(
+                        'Frontier reached - marking as visited'
+                    )
+
+                    self.goal_active = False
+                    self.current_goal = None
+                    self.last_robot_position = None
+                    self.last_movement_time = None
+                    return
+
 
             if current_position is not None and self.previous_position is not None:
 
