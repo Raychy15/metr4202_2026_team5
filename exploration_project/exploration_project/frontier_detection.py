@@ -87,11 +87,19 @@ class frontierDetector(Node):
             )
 
             # Find actual frontier cell closest to that centre
-            grid_x, grid_y = self.cell_closest_to_centre(
+            safe_cell = self.cell_closest_to_centre(
                 cluster,
                 centre_x,
-                centre_y
+                centre_y,
+                width,
+                height,
+                grid
             )
+
+            if safe_cell is None:
+                continue
+
+            grid_x, grid_y = safe_cell
 
             # Convert grid coordinates to real map coordinates
             world_x, world_y = self.convert_grid_to_worldmap(
@@ -224,33 +232,47 @@ class frontierDetector(Node):
         return centre_x, centre_y
 
 
-    def cell_closest_to_centre(self, cluster, centre_x, centre_y):
+    def is_safe_cell(self, x, y, width, height, grid, radius_cells=4):
 
-        # assuming the first cell is the closest to have a starting comparison
-        closest_cell = cluster[0]
+        for dy in range(-radius_cells, radius_cells + 1):
+            for dx in range(-radius_cells, radius_cells + 1):
 
-        x, y = closest_cell
+                if dx * dx + dy * dy > radius_cells * radius_cells:
+                    continue
 
-        #pythagorus for distance calc
-        closest_distance = (
-            (x - centre_x) ** 2
-            + (y - centre_y) ** 2
-        ) ** 0.5
+                nx = x + dx
+                ny = y + dy
 
-        # compare every frontier cell to the calculated centre
-        for cell in cluster:
+                if nx < 0 or nx >= width or ny < 0 or ny >= height:
+                    return False
 
-            x, y = cell
+                value = grid[ny * width + nx]
 
-            distance = (
-                (x - centre_x) ** 2
-                + (y - centre_y) ** 2
-            ) ** 0.5
+                if value > 50:
+                    return False
 
-            if distance < closest_distance:
-                #update closest cell with new one
-                closest_distance = distance
-                closest_cell = cell
+        return True
+
+
+
+    def cell_closest_to_centre(self, cluster, centre_x, centre_y, width, height, grid):
+
+        safe_cells = []
+
+        for x, y in cluster:
+            if self.is_safe_cell(x, y, width, height, grid):
+                safe_cells.append((x, y))
+
+        if not safe_cells:
+            return None
+
+        closest_cell = min(
+            safe_cells,
+            key=lambda cell: (
+                (cell[0] - centre_x) ** 2
+                + (cell[1] - centre_y) ** 2
+            )
+        )
 
         return closest_cell
 
