@@ -106,10 +106,10 @@ class FrontierNavigator(Node):
         self.last_movement_time = None
 
         # Minimum movement needed to count as moving
-        self.minimum_movement = 0.15
+        self.minimum_movement = 0.10
 
         # How long robot can stay in same area before recovery
-        self.stuck_timeout = 8.0
+        self.stuck_timeout = 20.0
 
          # Check for a stuck goal once per second
         self.timer = self.create_timer(
