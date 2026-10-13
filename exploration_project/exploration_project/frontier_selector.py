@@ -43,7 +43,7 @@ class FrontierNavigator(Node):
 
         self.map_msg = None
         self.unknown_check_radius = 0.5
-        self.minimum_unknown_cells = 10
+        self.minimum_unknown_cells = 5
 
         self.map_subscription = self.create_subscription(
             OccupancyGrid,
