@@ -296,7 +296,7 @@ class FrontierNavigator(Node):
                 )
                 continue
 
-        available_frontiers.append(frontier)
+            available_frontiers.append(frontier)
 
         self.get_logger().info(
             f'Frontiers: {len(self.frontiers)} received, '
