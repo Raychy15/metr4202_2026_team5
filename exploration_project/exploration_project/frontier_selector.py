@@ -93,6 +93,19 @@ class FrontierNavigator(Node):
         self.visited_frontiers = []
         self.visited_radius = 0.5
 
+        # start-up deadlock -> slam_toolbox only adds new scans to the
+        # map after the robot moves/turns, so a stationary robot never gets a
+        # new frontie so changing to make it so after no_frontier_wait seconds, 
+        # robot turn on the spot which makes map update
+        # if still nothing clear list and attempt again
+        self.no_frontier_since = None
+        self.no_frontier_wait = 5.0
+        self.spinning = False
+        self.spin_start_time = None
+        self.spin_duration = 8.0
+        self.unstick_attempts = 0
+        self.max_spins_before_reset = 2
+
         # Track whether a goal was already set
         self.goal_active = False
 
@@ -234,7 +247,8 @@ class FrontierNavigator(Node):
         self.publish_frontier_markers()
 
         # Send a goal if one is not already active and robot is not in recovery
-        if (not self.goal_active and not self.recovering and len(self.frontiers) > 0):
+        if (not self.goal_active and not self.recovering and not self.spinning
+                and len(self.frontiers) > 0):
             self.send_waypoint()
 
 
@@ -399,6 +413,8 @@ class FrontierNavigator(Node):
     def send_waypoint(self):
 
         if len(self.frontiers) == 0:
+            if self.no_frontier_since is None:
+                self.no_frontier_since = time.monotonic()
             return
         
         # Keep track of the number of waypoints sent
@@ -409,9 +425,15 @@ class FrontierNavigator(Node):
 
         if frontier is None:
             self.get_logger().info('No suitable frontier')
+            if self.no_frontier_since is None:
+                self.no_frontier_since = time.monotonic()
             return
-        
-        x, y, size = frontier  
+
+        # found a frontier: reset the start-up/deadlock fallback
+        self.no_frontier_since = None
+        self.unstick_attempts = 0
+
+        x, y, size = frontier
 
         goal = PoseStamped()
 
@@ -514,6 +536,22 @@ class FrontierNavigator(Node):
 
 
     def check_goal_timeout(self):
+
+        # FIX: finish an in-place turn, then look for frontiers again
+        if self.spinning:
+            if time.monotonic() - self.spin_start_time < self.spin_duration:
+                return
+            self.spinning = False
+            self.get_logger().info('Turn finished - selecting frontier again')
+            self.send_waypoint()
+            return
+
+        # nothing to do for a while -> unstick instead of waiting forever
+        if (not self.goal_active and not self.recovering
+                and self.no_frontier_since is not None
+                and time.monotonic() - self.no_frontier_since >= self.no_frontier_wait):
+            self.unstick()
+            return
 
         # Check whether recovery period has finished
         if self.recovering:
@@ -686,6 +724,55 @@ class FrontierNavigator(Node):
             self.get_logger().info(
                 'Navigation stalled - selecting a different frontier'
             )
+
+
+    def unstick(self):
+        # called when no frontier has passed the filters for a while
+        self.no_frontier_since = None
+        self.unstick_attempts += 1
+
+        if self.unstick_attempts > self.max_spins_before_reset:
+            # turning did not help: the 'visited' frontiers are the only ones
+            # left, so allow them again
+            self.get_logger().warning(
+                'Still no frontier after turning - clearing %d visited frontiers'
+                % len(self.visited_frontiers))
+            self.visited_frontiers = []
+            self.unstick_attempts = 0
+            self.send_waypoint()
+            return
+
+        position = self.get_robot_position()
+        if position is None:
+            return
+        yaw = self.get_robot_yaw()
+
+        # Goal at the robot's own position, facing the opposite way
+        goal = PoseStamped()
+        goal.header.frame_id = 'map'
+        goal.header.stamp = self.get_clock().now().to_msg()
+        goal.pose.position.x = position[0]
+        goal.pose.position.y = position[1]
+        new_yaw = yaw + math.pi
+        goal.pose.orientation.z = math.sin(new_yaw / 2.0)
+        goal.pose.orientation.w = math.cos(new_yaw / 2.0)
+        self.publisher_.publish(goal)
+
+        self.spinning = True
+        self.spin_start_time = time.monotonic()
+        self.get_logger().warning(
+            'No suitable frontier - turning on the spot to update the map '
+            '(attempt %d)' % self.unstick_attempts)
+
+
+    def get_robot_yaw(self):
+        try:
+            t = self.tf_buffer.lookup_transform('map', 'base_link', rclpy.time.Time())
+            q = t.transform.rotation
+            return math.atan2(2.0 * (q.w * q.z + q.x * q.y),
+                              1.0 - 2.0 * (q.y * q.y + q.z * q.z))
+        except Exception:
+            return 0.0
 
 
     def start_recovery(self):
