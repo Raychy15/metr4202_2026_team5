@@ -74,10 +74,22 @@ class frontierDetector(Node):
         'Number of frontier clusters: %d' % len(clusters)
         )   
 
+        # split long frontiers into pieces of at most 1.5 m. A long
+        # frontier used to become ONE candidate; if the robot was already
+        # next to it at start-up, there was nothing else to go to
+        max_cells = max(10, int(1.5 / resolution))
+        segments = []
+        for cluster in clusters:
+            segments.extend(self.split_cluster(cluster, max_cells))
+
+        self.get_logger().info(
+            'Number of frontier segments: %d' % len(segments)
+        )
+
         # Simplify to one location for each cluster to track and also size
         frontier_locations = []
 
-        for cluster in clusters:
+        for cluster in segments:
 
             # number of frontier cells in this cluster
             cluster_size = len(cluster)
@@ -103,7 +115,6 @@ class frontierDetector(Node):
                     'Frontier cluster rejected: no nearby collision-safe goal'
                 )
                 continue
-
             grid_x, grid_y = safe_cell
 
             # Convert grid coordinates to real map coordinates
@@ -214,6 +225,32 @@ class frontierDetector(Node):
 
         return clusters
 
+    
+    def split_cluster(self, cluster, max_cells):
+        # split a cluster into pieces along its longest direction
+        n = len(cluster)
+        if n <= max_cells:
+            return [cluster]
+
+        mean_x = sum(c[0] for c in cluster) / n
+        mean_y = sum(c[1] for c in cluster) / n
+        sxx = sum((c[0] - mean_x) ** 2 for c in cluster)
+        syy = sum((c[1] - mean_y) ** 2 for c in cluster)
+        sxy = sum((c[0] - mean_x) * (c[1] - mean_y) for c in cluster)
+
+        # direction of largest spread (principal axis of the cells)
+        angle = 0.5 * math.atan2(2.0 * sxy, sxx - syy)
+        ux, uy = math.cos(angle), math.sin(angle)
+
+        ordered = sorted(
+            cluster,
+            key=lambda c: (c[0] - mean_x) * ux + (c[1] - mean_y) * uy
+        )
+
+        pieces = int(math.ceil(n / float(max_cells)))
+        size = int(math.ceil(n / float(pieces)))
+        return [ordered[i:i + size] for i in range(0, n, size)]
+
 
     #currently only finds average of group of cells
     #might be inaccurate depending on shape of cluster
@@ -238,7 +275,7 @@ class frontierDetector(Node):
 
 
     def is_safe_cell(self, x, y, width, height, grid, resolution,
-                 obstacle_clearance=0.25, unknown_clearance=0.12):
+                 obstacle_clearance=0.30, unknown_clearance=0.20):
 
         if grid[y * width + x] != 0:
             return False
