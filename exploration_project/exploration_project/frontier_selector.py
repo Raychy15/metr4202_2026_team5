@@ -13,7 +13,6 @@ from nav_msgs.msg import OccupancyGrid
 
 
 
-
 class FrontierNavigator(Node):
 
     def __init__(self):
@@ -98,7 +97,7 @@ class FrontierNavigator(Node):
         # new frontie so changing to make it so after no_frontier_wait seconds, 
         # robot turn on the spot which makes map update
         # if still nothing clear list and attempt again
-        self.no_frontier_since = None
+        self.no_frontier_since = time.monotonic()
         self.no_frontier_wait = 5.0
         self.spinning = False
         self.spin_start_time = None
@@ -430,8 +429,8 @@ class FrontierNavigator(Node):
             return
 
         # found a frontier: reset the start-up/deadlock fallback
-        self.no_frontier_since = None
-        self.unstick_attempts = 0
+        #self.no_frontier_since = None
+        #self.unstick_attempts = 0
 
         x, y, size = frontier
 
@@ -473,6 +472,8 @@ class FrontierNavigator(Node):
             self.get_logger().info(
                 'Cannot send goal - robot position unavailable'
             )
+            if self.no_frontier_since is None:
+                self.no_frontier_since = time.monotonic()
             return
 
         # Save position before attempting frontier
@@ -483,6 +484,10 @@ class FrontierNavigator(Node):
 
         self.goal_active = True
         self.current_goal = (x, y)
+
+        # Reset timer only after sending a goal
+        self.no_frontier_since = None
+        self.unstick_attempts = 0
 
         self.publish_active_goal_marker()
 
@@ -551,6 +556,16 @@ class FrontierNavigator(Node):
                 and self.no_frontier_since is not None
                 and time.monotonic() - self.no_frontier_since >= self.no_frontier_wait):
             self.unstick()
+            return
+
+        # Retry when there is no active goal
+        if not self.goal_active and not self.recovering:
+            if self.no_frontier_since is None:
+                self.no_frontier_since = time.monotonic()
+
+            if self.frontiers:
+                self.send_waypoint()
+
             return
 
         # Check whether recovery period has finished
@@ -645,6 +660,9 @@ class FrontierNavigator(Node):
                 self.current_goal = None
                 self.last_robot_position = None
                 self.last_movement_time = None
+
+                # Start timer for finding the next frontier
+                self.no_frontier_since = time.monotonic()
                 return
         
         
@@ -721,6 +739,9 @@ class FrontierNavigator(Node):
             self.recovering = False
             self.recovery_start_time = None
 
+             # Start timer for finding another frontier
+            self.no_frontier_since = time.monotonic()
+
             self.get_logger().info(
                 'Navigation stalled - selecting a different frontier'
             )
@@ -735,15 +756,12 @@ class FrontierNavigator(Node):
             # turning did not help: the 'visited' frontiers are the only ones
             # left, so allow them again
             self.get_logger().warning(
-                'Still no frontier after turning - clearing %d visited frontiers'
-                % len(self.visited_frontiers))
-            self.visited_frontiers = []
-            self.unstick_attempts = 0
-            self.send_waypoint()
-            return
+                'Still no frontier after turning - keeping visited/failed frontiers')
+            self.unstick_attempts = 1
 
         position = self.get_robot_position()
         if position is None:
+            self.no_frontier_since = time.monotonic()
             return
         yaw = self.get_robot_yaw()
 

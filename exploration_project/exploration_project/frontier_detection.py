@@ -1,4 +1,5 @@
 import rclpy
+import math
 from rclpy.node import Node
 
 from nav_msgs.msg import OccupancyGrid
@@ -93,10 +94,14 @@ class frontierDetector(Node):
                 centre_y,
                 width,
                 height,
-                grid
+                grid,
+                resolution
             )
 
             if safe_cell is None:
+                self.get_logger().info(
+                    'Frontier cluster rejected: no nearby collision-safe goal'
+                )
                 continue
 
             grid_x, grid_y = safe_cell
@@ -232,49 +237,97 @@ class frontierDetector(Node):
         return centre_x, centre_y
 
 
-    def is_safe_cell(self, x, y, width, height, grid, radius_cells=4):
+    def is_safe_cell(self, x, y, width, height, grid, resolution,
+                 obstacle_clearance=0.27, unknown_clearance=0.12):
 
-        for dy in range(-radius_cells, radius_cells + 1):
-            for dx in range(-radius_cells, radius_cells + 1):
-
-                if dx * dx + dy * dy > radius_cells * radius_cells:
+        if grid[y * width + x] != 0:
+            return False
+        
+        radius = int(math.ceil(obstacle_clearance / resolution))
+        for dy in range(-radius, radius + 1):
+            for dx in range(-radius, radius + 1):
+                dist = math.hypot(dx, dy) * resolution
+                if dist > obstacle_clearance:
                     continue
-
-                nx = x + dx
-                ny = y + dy
-
+                nx, ny = x + dx, y + dy
                 if nx < 0 or nx >= width or ny < 0 or ny >= height:
                     return False
-
                 value = grid[ny * width + nx]
-
                 if value > 50:
                     return False
-
+                if value == -1 and dist <= unknown_clearance:
+                    return False
         return True
 
 
 
-    def cell_closest_to_centre(self, cluster, centre_x, centre_y, width, height, grid):
+    def cell_closest_to_centre(self, cluster, centre_x, centre_y, width, height, grid, resolution):
 
-        safe_cells = []
+        # Search up to 0.35 m around frontier cells
+        radius = max(1, int(math.ceil(0.35 / resolution)))
 
-        for x, y in cluster:
-            if self.is_safe_cell(x, y, width, height, grid):
-                safe_cells.append((x, y))
+        offsets = sorted(
+            (
+                (dx, dy)
+                for dy in range(-radius, radius + 1)
+                for dx in range(-radius, radius + 1)
+                if math.hypot(dx, dy) * resolution <= 0.35
+            ),
+            key=lambda d: d[0] ** 2 + d[1] ** 2
+        )
 
-        if not safe_cells:
-            return None
-
-        closest_cell = min(
-            safe_cells,
-            key=lambda cell: (
-                (cell[0] - centre_x) ** 2
-                + (cell[1] - centre_y) ** 2
+        # Start with frontier cells closest to the cluster centre
+        ordered = sorted(
+            cluster,
+            key=lambda c: (
+                (c[0] - centre_x) ** 2
+                + (c[1] - centre_y) ** 2
             )
         )
 
-        return closest_cell
+        samples = ordered[:15]
+
+        # Also sample across the frontier edge
+        if len(ordered) > 15:
+            step = max(1, len(ordered) // 20)
+            samples += ordered[::step][:20]
+
+        best_cell = None
+        best_cost = float('inf')
+        tested = set()
+
+        for fx, fy in samples:
+            for dx, dy in offsets:
+
+                x = fx + dx
+                y = fy + dy
+
+                if (x, y) in tested:
+                    continue
+
+                tested.add((x, y))
+
+                if not (0 <= x < width and 0 <= y < height):
+                    continue
+
+                if grid[y * width + x] != 0:
+                    continue
+
+                if not self.is_safe_cell(
+                    x, y, width, height, grid, resolution
+                ):
+                    continue
+
+                cost = (
+                    (x - centre_x) ** 2
+                    + (y - centre_y) ** 2
+                )
+
+                if cost < best_cost:
+                    best_cost = cost
+                    best_cell = (x, y)
+
+        return best_cell
 
 
 
