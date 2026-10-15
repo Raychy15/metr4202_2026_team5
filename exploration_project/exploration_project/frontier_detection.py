@@ -238,7 +238,7 @@ class frontierDetector(Node):
 
 
     def is_safe_cell(self, x, y, width, height, grid, resolution,
-                 obstacle_clearance=0.27, unknown_clearance=0.12):
+                 obstacle_clearance=0.25, unknown_clearance=0.12):
 
         if grid[y * width + x] != 0:
             return False
