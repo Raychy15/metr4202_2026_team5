@@ -1,0 +1,612 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <world name="ring_mix">
+    <include><uri>model://ground_plane</uri></include>
+    <include><uri>model://sun</uri></include>
+    <physics type="ode"><real_time_update_rate>1000.0</real_time_update_rate><max_step_size>0.001</max_step_size><real_time_factor>1</real_time_factor><ode><solver><type>quick</type><iters>150</iters><precon_iters>0</precon_iters><sor>1.400000</sor><use_dynamic_moi_rescaling>1</use_dynamic_moi_rescaling></solver><constraints><cfm>0.00001</cfm><erp>0.2</erp><contact_max_correcting_vel>2000.000000</contact_max_correcting_vel><contact_surface_layer>0.01000</contact_surface_layer></constraints></ode></physics>
+    <scene><shadows>false</shadows></scene>
+    <gui fullscreen="0"><camera name="user_camera"><pose>7.2 -5.5 13 0 0.95 1.5707</pose><view_controller>orbit</view_controller><projection_type>perspective</projection_type></camera></gui>
+    <model name='unit_box_0'>
+      <pose>-0.5052 -0.5008 0.5 0 0 -0.00531</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_1'>
+      <pose>0.6029 -0.5029 0.5 0 0 0.00757</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_2'>
+      <pose>1.7079 -0.4971 0.5 0 0 0.00893</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_3'>
+      <pose>2.8107 -0.5004 0.5 0 0 -0.00779</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_4'>
+      <pose>3.9177 -0.5052 0.5 0 0 -0.00286</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_5'>
+      <pose>5.0139 -0.4973 0.5 0 0 -0.00088</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_6'>
+      <pose>6.1215 -0.4997 0.5 0 0 0.00718</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_7'>
+      <pose>7.2308 -0.5016 0.5 0 0 0.00797</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_8'>
+      <pose>8.3311 -0.4976 0.5 0 0 0.00999</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_9'>
+      <pose>9.4286 -0.5022 0.5 0 0 -0.00036</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_10'>
+      <pose>10.5334 -0.5025 0.5 0 0 -0.00630</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_11'>
+      <pose>11.6443 -0.4944 0.5 0 0 0.00788</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_12'>
+      <pose>12.7464 -0.5011 0.5 0 0 -0.00397</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_13'>
+      <pose>13.8453 -0.5058 0.5 0 0 -0.00800</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_14'>
+      <pose>14.9497 -0.5010 0.5 0 0 0.00322</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_15'>
+      <pose>-0.4993 10.8252 0.5 0 0 0.00730</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_16'>
+      <pose>0.6027 10.8297 0.5 0 0 -0.00270</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_17'>
+      <pose>1.7055 10.8350 0.5 0 0 0.00976</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_18'>
+      <pose>2.8069 10.8350 0.5 0 0 0.00651</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_19'>
+      <pose>3.9182 10.8274 0.5 0 0 0.00834</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_20'>
+      <pose>5.0188 10.8295 0.5 0 0 -0.00974</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_21'>
+      <pose>6.1216 10.8261 0.5 0 0 -0.00443</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_22'>
+      <pose>7.2294 10.8281 0.5 0 0 0.00659</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_23'>
+      <pose>8.3270 10.8254 0.5 0 0 -0.00214</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_24'>
+      <pose>9.4281 10.8258 0.5 0 0 0.00364</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_25'>
+      <pose>10.5381 10.8262 0.5 0 0 0.00481</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_26'>
+      <pose>11.6397 10.8252 0.5 0 0 -0.00839</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_27'>
+      <pose>12.7453 10.8349 0.5 0 0 0.00679</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_28'>
+      <pose>13.8476 10.8248 0.5 0 0 0.00506</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_29'>
+      <pose>14.9447 10.8334 0.5 0 0 -0.00861</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_30'>
+      <pose>-0.4943 0.5198 0.5 0 0 -0.00595</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_31'>
+      <pose>-0.5048 1.5494 0.5 0 0 0.00428</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_32'>
+      <pose>-0.5028 2.5794 0.5 0 0 0.00528</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_33'>
+      <pose>-0.5040 3.6127 0.5 0 0 -0.00603</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_34'>
+      <pose>-0.5043 4.6458 0.5 0 0 -0.00899</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_35'>
+      <pose>-0.5058 5.6766 0.5 0 0 -0.00225</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_36'>
+      <pose>-0.4949 6.7174 0.5 0 0 0.00106</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_37'>
+      <pose>-0.5040 7.7507 0.5 0 0 -0.00486</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_38'>
+      <pose>-0.4997 8.7785 0.5 0 0 -0.00174</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_39'>
+      <pose>-0.5033 9.8148 0.5 0 0 -0.00820</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_40'>
+      <pose>14.9481 0.5223 0.5 0 0 -0.00459</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_41'>
+      <pose>14.9443 1.5472 0.5 0 0 0.00473</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_42'>
+      <pose>14.9503 2.5828 0.5 0 0 0.00717</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_43'>
+      <pose>14.9518 3.6130 0.5 0 0 -0.00614</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_44'>
+      <pose>14.9547 4.6478 0.5 0 0 0.00109</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_45'>
+      <pose>14.9483 5.6864 0.5 0 0 0.00229</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_46'>
+      <pose>14.9539 6.7122 0.5 0 0 0.00385</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_47'>
+      <pose>14.9449 7.7410 0.5 0 0 -0.00419</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_48'>
+      <pose>14.9475 8.7832 0.5 0 0 -0.00575</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_49'>
+      <pose>14.9507 9.8145 0.5 0 0 0.00076</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_50'>
+      <pose>8.7748 0.5325 0.5 0 0 0.00526</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_51'>
+      <pose>12.8857 0.5277 0.5 0 0 0.00773</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_52'>
+      <pose>6.7086 1.3631 0.5 0 0 0.00283</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_53'>
+      <pose>13.5458 1.5605 0.5 0 0 0.00966</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_54'>
+      <pose>4.6539 2.5925 0.5 0 0 0.00959</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_55'>
+      <pose>5.6821 2.5894 0.5 0 0 0.00669</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_56'>
+      <pose>6.7125 2.5908 0.5 0 0 0.00509</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_57'>
+      <pose>7.7405 2.5947 0.5 0 0 0.00063</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_58'>
+      <pose>8.7748 2.5894 0.5 0 0 0.00649</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_59'>
+      <pose>9.7944 2.5954 0.5 0 0 -0.00766</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_60'>
+      <pose>4.6488 3.6172 0.5 0 0 0.00657</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_61'>
+      <pose>9.8021 3.6191 0.5 0 0 -0.00878</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_62'>
+      <pose>4.6497 4.6544 0.5 0 0 0.00764</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_63'>
+      <pose>9.7978 4.6558 0.5 0 0 -0.00442</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_64'>
+      <pose>4.6553 5.6753 0.5 0 0 -0.00966</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_65'>
+      <pose>9.8014 5.6778 0.5 0 0 0.00237</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_66'>
+      <pose>4.6499 6.7064 0.5 0 0 0.00849</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_67'>
+      <pose>9.7942 6.7076 0.5 0 0 0.00148</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_68'>
+      <pose>4.6514 7.7379 0.5 0 0 -0.00465</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_69'>
+      <pose>5.6762 7.7439 0.5 0 0 -0.00227</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_70'>
+      <pose>6.7065 7.7446 0.5 0 0 0.00591</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_71'>
+      <pose>8.5545 7.7407 0.5 0 0 0.01021</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_72'>
+      <pose>9.7989 7.7448 0.5 0 0 0.00967</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_73'>
+      <pose>8.7712 8.7701 0.5 0 0 0.00265</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_74'>
+      <pose>6.7123 9.7969 0.5 0 0 0.01040</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_75'>
+      <pose>10.8628 5.6852 0.5 0 0 0.00750</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_76'>
+      <pose>12.7063 5.6743 0.5 0 0 -0.00513</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_77'>
+      <pose>13.9236 5.6854 0.5 0 0 -0.00541</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_78'>
+      <pose>1.7000 6.2000 0.5 0 0 0.17453</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_79'>
+      <pose>2.7144 6.3789 0.5 0 0 0.17453</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_80'>
+      <pose>1.5211 7.2144 0.5 0 0 0.17453</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_81'>
+      <pose>11.7000 2.6000 0.5 0 0 0.43633</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_box_82'>
+      <pose>7.2100 5.1500 0.5 0 0 0.78540</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><box><size>1 1 1</size></box></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><box><size>1 1 1</size></box></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_sphere_0'>
+      <pose>2.7000 2.7000 0.5 0 0 0.00000</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><sphere><radius>0.5</radius></sphere></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><sphere><radius>0.5</radius></sphere></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_cylinder_0'>
+      <pose>1.0000 9.1000 0.5 0 0 0.00000</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><cylinder><radius>0.5</radius><length>1</length></cylinder></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><cylinder><radius>0.5</radius><length>1</length></cylinder></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+    <model name='unit_cylinder_1'>
+      <pose>12.4000 8.3000 0.5 0 0 0.00000</pose>
+      <link name='link'><inertial><mass>1</mass><inertia><ixx>0.166667</ixx><ixy>0</ixy><ixz>0</ixz><iyy>0.166667</iyy><iyz>0</iyz><izz>0.166667</izz></inertia></inertial>
+        <collision name='collision'><geometry><cylinder><radius>0.5</radius><length>1</length></cylinder></geometry><max_contacts>10</max_contacts></collision>
+        <visual name='visual'><geometry><cylinder><radius>0.5</radius><length>1</length></cylinder></geometry><material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material></visual>
+      </link>
+    </model>
+  </world>
+</sdf>
