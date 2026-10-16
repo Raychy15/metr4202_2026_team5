@@ -1,7 +1,6 @@
 import rclpy
 import time
 import math
-import random
 
 from rclpy.node import Node
 
@@ -11,6 +10,8 @@ from std_msgs.msg import Float32MultiArray
 from tf2_ros import Buffer, TransformListener
 from visualization_msgs.msg import Marker, MarkerArray
 from nav_msgs.msg import OccupancyGrid
+from sensor_msgs.msg import LaserScan
+from rclpy.qos import qos_profile_sensor_data
 
 
 
@@ -50,6 +51,15 @@ class FrontierNavigator(Node):
             '/map',
             self.map_callback,
             10
+        )
+
+        # Laser scan, used to check that a short drive is clear
+        self.last_scan = None
+        self.scan_subscription = self.create_subscription(
+            LaserScan,
+            'scan',
+            self.scan_callback,
+            qos_profile_sensor_data
         )
 
         # Create a subscriber to the behavior_tree_log topic
@@ -106,11 +116,18 @@ class FrontierNavigator(Node):
         self.unstick_attempts = 0
         self.max_spins_before_reset = 2
 
-        # Short local move when no frontier is usable or navigation stalls.
-        self.random_recovery_active = False
-        self.random_recovery_target = None
-        self.random_recovery_start = None
-        self.random_recovery_timeout = 12.0
+        #slam_toolbox only adds a scan after the robot has DRIVEN about
+        # 0.5 m, a short drive into open space is used instead
+        self.nudge_distance = 0.8
+        self.last_nudge_angle = None
+        self.last_nudge_from = None
+
+        #  a goal closer than this to the robot counts as already there
+        self.min_goal_distance = 0.5
+
+        #drop the active goal if the updated map puts it closer than
+        # this to a wall
+        self.goal_wall_clearance = 0.27
 
         # Track whether a goal was already set
         self.goal_active = False
@@ -251,6 +268,19 @@ class FrontierNavigator(Node):
         )
 
         self.publish_frontier_markers()
+
+        # a wall can appear next to a goal that looked open when it was chosen. Drop that goal (and
+        # blacklist it) instead of driving the robot into the wall
+        if (self.goal_active and self.current_goal is not None
+                and self.wall_distance(*self.current_goal) < self.goal_wall_clearance):
+            self.get_logger().warning(
+                'Goal (%.2f, %.2f) is now too close to a wall in the updated map - '
+                'choosing again' % self.current_goal)
+            self.blacklist_current_goal()
+            self.goal_active = False
+            self.current_goal = None
+            self.last_robot_position = None
+            self.last_movement_time = None
 
         # Send a goal if one is not already active and robot is not in recovery
         if (not self.goal_active and not self.recovering and not self.spinning
@@ -441,6 +471,20 @@ class FrontierNavigator(Node):
 
         x, y, size = frontier
 
+        # goal right next to the robot, Nav2 would arrive without moving, so the map would not change (the start-up
+        # stall). Mark it visited and drive a short way towards it instead
+        here = self.get_robot_position()
+        if here is not None and math.hypot(x - here[0], y - here[1]) < self.min_goal_distance:
+            self.visited_frontiers.append((x, y))
+            self.get_logger().info(
+                'Frontier (%.2f, %.2f) is right next to the robot - marking it visited'
+                % (x, y))
+            toward = math.atan2(y - here[1], x - here[0])
+            if not self.start_nudge(here, toward):
+                if self.no_frontier_since is None:
+                    self.no_frontier_since = time.monotonic()
+            return
+
         goal = PoseStamped()
 
         goal.header.frame_id = 'map'
@@ -549,30 +593,7 @@ class FrontierNavigator(Node):
 
     def check_goal_timeout(self):
 
-        # A random recovery goal is not a frontier: never mark it as visited.
-        if self.random_recovery_active:
-            position = self.get_robot_position()
-            reached = (position is not None and
-                       math.hypot(position[0] - self.random_recovery_target[0],
-                                  position[1] - self.random_recovery_target[1]) < 0.25)
-            timed_out = (time.monotonic() - self.random_recovery_start
-                         >= self.random_recovery_timeout)
-            if reached or timed_out:
-                self.get_logger().info(
-                    'Local recovery %s - looking for frontiers'
-                    % ('reached' if reached else 'timed out')
-                )
-                self.random_recovery_active = False
-                self.random_recovery_target = None
-                self.random_recovery_start = None
-                self.goal_active = False
-                self.current_goal = None
-                self.last_robot_position = None
-                self.last_movement_time = None
-                self.no_frontier_since = time.monotonic()
-            return
-
-        # FIX: finish an in-place turn, then look for frontiers again
+        # finish an in-place turn, then look for frontiers again
         if self.spinning:
             if time.monotonic() - self.spin_start_time < self.spin_duration:
                 return
@@ -763,21 +784,15 @@ class FrontierNavigator(Node):
             self.last_robot_position = None
             self.last_movement_time = None
 
-            # Return towards previous safe position
-            #self.start_recovery()
-            # Stop tracking the failed goal and allow a new frontier
-            self.recovering = False
-            self.recovery_start_time = None
+
+            self.start_recovery()
 
              # Start timer for finding another frontier
             self.no_frontier_since = time.monotonic()
 
             self.get_logger().info(
-                'Navigation stalled - trying a nearby safe recovery point'
+                'Navigation stalled - selecting a different frontier'
             )
-            # Try moving into free space before selecting another frontier.
-            # If none is safe, the existing timer/turn fallback still works.
-            self.try_random_recovery()
 
 
     def unstick(self):
@@ -792,17 +807,24 @@ class FrontierNavigator(Node):
                 'Still no frontier after turning - keeping visited/failed frontiers')
             self.unstick_attempts = 1
 
-        # First try a short move to a safe random point on the known map.
-        if self.try_random_recovery():
-            return
-
         position = self.get_robot_position()
         if position is None:
             self.no_frontier_since = time.monotonic()
             return
         yaw = self.get_robot_yaw()
 
-        # No safe local point: fall back to the existing in-place turn.
+        #drive 0.8 m into open space so SLAM adds a new scan
+        if self.start_nudge(position, None):
+            return
+
+        # only turn on the spot if nothing is close enough for the
+        # robot's corners to hit while turning
+        if self.nearest_obstacle() < 0.32:
+            self.get_logger().warning(
+                'No suitable frontier and no room to drive or turn - waiting')
+            self.no_frontier_since = time.monotonic()
+            return
+
         # Goal at the robot's own position, facing the opposite way
         goal = PoseStamped()
         goal.header.frame_id = 'map'
@@ -819,97 +841,6 @@ class FrontierNavigator(Node):
         self.get_logger().warning(
             'No suitable frontier - turning on the spot to update the map '
             '(attempt %d)' % self.unstick_attempts)
-
-
-    def recovery_cell_is_safe(self, x, y, clearance=0.25,
-                              unknown_clearance=0.12):
-        """Check that a map-frame point is free with footprint clearance."""
-        if self.map_msg is None:
-            return False
-
-        info = self.map_msg.info
-        res = info.resolution
-        if res <= 0:
-            return False
-
-        # SLAM occupancy grids normally have an axis-aligned origin.
-        gx = int(math.floor((x - info.origin.position.x) / res))
-        gy = int(math.floor((y - info.origin.position.y) / res))
-        width, height = info.width, info.height
-        if not (0 <= gx < width and 0 <= gy < height):
-            return False
-        grid = self.map_msg.data
-        if grid[gy * width + gx] != 0:
-            return False
-
-        radius = int(math.ceil(clearance / res))
-        for dy in range(-radius, radius + 1):
-            for dx in range(-radius, radius + 1):
-                distance = math.hypot(dx, dy) * res
-                if distance > clearance:
-                    continue
-                cx, cy = gx + dx, gy + dy
-                if not (0 <= cx < width and 0 <= cy < height):
-                    return False
-                value = grid[cy * width + cx]
-                if value > 50 or (value == -1 and distance <= unknown_clearance):
-                    return False
-        return True
-
-    def try_random_recovery(self):
-        """Send a short, map-checked local goal instead of a blind random goal."""
-        position = self.get_robot_position()
-        if position is None or self.map_msg is None:
-            return False
-        res = self.map_msg.info.resolution
-        if res <= 0:
-            return False
-
-        robot_x, robot_y = position
-        # Short movements only: do not replace the frontier-selection strategy.
-        for _ in range(50):
-            angle = random.uniform(-math.pi, math.pi)
-            distance = random.uniform(0.35, 0.75)
-            x = robot_x + distance * math.cos(angle)
-            y = robot_y + distance * math.sin(angle)
-            if not self.recovery_cell_is_safe(x, y):
-                continue
-
-            # Reject candidates whose direct route crosses a wall or unknown area.
-            # This is a simple map check; Nav2 still makes the final path decision.
-            steps = max(1, int(math.ceil(distance / res)))
-            if not all(self.recovery_cell_is_safe(
-                    robot_x + (x - robot_x) * i / steps,
-                    robot_y + (y - robot_y) * i / steps)
-                    for i in range(1, steps + 1)):
-                continue
-
-            goal = PoseStamped()
-            goal.header.frame_id = 'map'
-            goal.header.stamp = self.get_clock().now().to_msg()
-            goal.pose.position.x = x
-            goal.pose.position.y = y
-            # Keep the current heading at the destination.
-            yaw = self.get_robot_yaw()
-            goal.pose.orientation.z = math.sin(yaw / 2.0)
-            goal.pose.orientation.w = math.cos(yaw / 2.0)
-            self.publisher_.publish(goal)
-
-            self.random_recovery_active = True
-            self.random_recovery_target = (x, y)
-            self.random_recovery_start = time.monotonic()
-            self.goal_active = True  # Prevent normal frontier goals during recovery.
-            self.current_goal = None  # Do not mark this location as a frontier.
-            self.no_frontier_since = None
-            self.get_logger().warning(
-                'Trying local recovery goal: x=%.2f y=%.2f (%.2f m away)'
-                % (x, y, distance))
-            return True
-
-        self.get_logger().warning(
-            'No safe nearby recovery point found - using turn fallback'
-        )
-        return False
 
 
     def get_robot_yaw(self):
@@ -967,6 +898,138 @@ class FrontierNavigator(Node):
                 'Blacklisted frontier: x=%.2f, y=%.2f'
                 % self.current_goal
             )
+
+
+    def scan_callback(self, msg):
+        #keep the latest laser scan
+        self.last_scan = msg
+
+
+    def laser_points(self):
+        # obstacles the laser sees, in the robot frame
+        scan = self.last_scan
+        if scan is None:
+            return None
+        points = []
+        for i, r in enumerate(scan.ranges):
+            if math.isfinite(r) and scan.range_min < r < scan.range_max:
+                b = scan.angle_min + i * scan.angle_increment
+                points.append((r * math.cos(b) - 0.064, r * math.sin(b)))
+        return points
+
+
+    def nearest_obstacle(self):
+        #distance from base_link to the closest laser return
+        points = self.laser_points()
+        if not points:
+            return 0.0 if points is None else 9.0
+        return min(math.hypot(px, py) for px, py in points)
+
+
+    def start_nudge(self, position, toward):
+        #short drive so SLAM adds a scan. The direction
+        # must be clear in the laser: end point 0.35 m from every return and
+        # the straight line to it 0.25 m. 'toward' = preferred direction
+        points = self.laser_points()
+        if points is None:
+            return False
+        yaw = self.get_robot_yaw()
+
+        # do not drive straight back the way the last drive came; if it did
+        # not get anywhere, do not repeat its direction either
+        avoid = []
+        if self.last_nudge_angle is not None and toward is None:
+            avoid.append(self.last_nudge_angle + math.pi)
+            if (self.last_nudge_from is not None and math.hypot(
+                    position[0] - self.last_nudge_from[0],
+                    position[1] - self.last_nudge_from[1]) < 0.2):
+                avoid.append(self.last_nudge_angle)
+
+        best = None
+        for distance in (self.nudge_distance, 0.6):
+            for k in range(36):
+                world_a = yaw - math.pi + k * (2.0 * math.pi / 36)
+                if any(abs(math.atan2(math.sin(world_a - b), math.cos(world_a - b))) < 0.6
+                       for b in avoid):
+                    continue
+                if toward is not None and abs(math.atan2(
+                        math.sin(world_a - toward), math.cos(world_a - toward))) > math.radians(60):
+                    continue
+                a = world_a - yaw
+                if not self.drive_is_clear(points, distance * math.cos(a), distance * math.sin(a)):
+                    continue
+                x = position[0] + distance * math.cos(world_a)
+                y = position[1] + distance * math.sin(world_a)
+                if self.wall_distance(x, y) < 0.35:
+                    continue
+                score = self.wall_distance(x, y)
+                if toward is not None:
+                    score += math.cos(world_a - toward)
+                if best is None or score > best[0]:
+                    best = (score, x, y, world_a)
+            if best is not None:
+                break
+        if best is None:
+            return False
+
+        score, x, y, angle = best
+        goal = PoseStamped()
+        goal.header.frame_id = 'map'
+        goal.header.stamp = self.get_clock().now().to_msg()
+        goal.pose.position.x = x
+        goal.pose.position.y = y
+        goal.pose.orientation.z = math.sin(angle / 2.0)
+        goal.pose.orientation.w = math.cos(angle / 2.0)
+        self.publisher_.publish(goal)
+
+        self.last_nudge_angle = angle
+        self.last_nudge_from = position
+        # same state as the turn on the spot: wait spin_duration, then
+        # choose a frontier again
+        self.spinning = True
+        self.spin_start_time = time.monotonic()
+        self.get_logger().warning(
+            'Driving %.1f m to (%.2f, %.2f) so SLAM adds a new scan'
+            % (math.hypot(x - position[0], y - position[1]), x, y))
+        return True
+
+
+    def drive_is_clear(self, points, tx, ty):
+        # True if no laser point is within 0.35 m of the end point
+        #or within 0.25 m of the straight line to it (robot frame).
+        # Points level with or behind the robot are ignored for the line
+        length2 = tx * tx + ty * ty
+        for px, py in points:
+            if (px - tx) ** 2 + (py - ty) ** 2 < 0.35 ** 2:
+                return False
+            t = (px * tx + py * ty) / length2
+            if t <= 0.0:
+                continue
+            t = min(t, 1.0)
+            if (px - t * tx) ** 2 + (py - t * ty) ** 2 < 0.25 ** 2:
+                return False
+        return True
+
+
+    def wall_distance(self, x, y, max_distance=0.5):
+        # distance to the nearest wall cell in the map
+        if self.map_msg is None:
+            return max_distance
+        info = self.map_msg.info
+        resolution = info.resolution
+        grid_x = int((x - info.origin.position.x) / resolution)
+        grid_y = int((y - info.origin.position.y) / resolution)
+        radius = int(max_distance / resolution)
+        best = max_distance
+        for dy in range(-radius, radius + 1):
+            for dx in range(-radius, radius + 1):
+                nx = grid_x + dx
+                ny = grid_y + dy
+                if not (0 <= nx < info.width and 0 <= ny < info.height):
+                    continue
+                if self.map_msg.data[ny * info.width + nx] > 50:
+                    best = min(best, math.hypot(dx, dy) * resolution)
+        return best
 
 
     def publish_frontier_markers(self):
