@@ -98,10 +98,16 @@ class FrontierNavigator(Node):
 
         # Store the most recent frontier candidates
         self.frontiers = []
+        # Failed goals are cooled down, not permanently discarded.
+        # Entries are (x, y, failure_time).
         self.failed_frontiers = []
+        self.failed_frontier_cooldown = 60.0
 
+        # Visited goals are also cooled down, not permanently discarded.
+        # Entries are (x, y, visit_time)
         self.visited_frontiers = []
         self.visited_radius = 0.5
+        self.visited_frontier_cooldown = 120.0
 
         # start-up deadlock -> slam_toolbox only adds new scans to the
         # map after the robot moves/turns, so a stationary robot never gets a
@@ -119,6 +125,7 @@ class FrontierNavigator(Node):
         #slam_toolbox only adds a scan after the robot has DRIVEN about
         # 0.5 m, a short drive into open space is used instead
         self.nudge_distance = 0.8
+        self.nudge_goal = None
         self.last_nudge_angle = None
         self.last_nudge_from = None
 
@@ -160,7 +167,7 @@ class FrontierNavigator(Node):
         self.minimum_movement = 0.10
 
         # How long robot can stay in same area before recovery
-        self.stuck_timeout = 20.0
+        self.stuck_timeout = 12.0
 
          # Check for a stuck goal once per second
         self.timer = self.create_timer(
@@ -297,6 +304,27 @@ class FrontierNavigator(Node):
 
         robot_position = self.get_robot_position()
 
+        # Old failed waypoints can be reconsidered after the map or robot moves.
+        now = time.monotonic()
+        before = len(self.failed_frontiers)
+        self.failed_frontiers = [
+            (fx, fy, failed_at)
+            for fx, fy, failed_at in self.failed_frontiers
+            if now - failed_at < self.failed_frontier_cooldown
+        ]
+        if before != len(self.failed_frontiers):
+            self.get_logger().info(
+                f'Expired {before - len(self.failed_frontiers)} failed-frontier cooldown(s)'
+            )
+
+        # Visited spots can be reconsidered after their cooldown, so a frontier
+        # that was not fully mapped on the first visit is not lost for good
+        self.visited_frontiers = [
+            (vx, vy, visited_at)
+            for vx, vy, visited_at in self.visited_frontiers
+            if now - visited_at < self.visited_frontier_cooldown
+        ]
+
         # Keep only frontiers that are not blacklisted
         available_frontiers = []
 
@@ -311,7 +339,7 @@ class FrontierNavigator(Node):
             # Ignore frontiers near locations already visited
             already_visited = any(
                 math.hypot(x - vx, y - vy) < self.visited_radius
-                for vx, vy in self.visited_frontiers
+                for vx, vy, visited_at in self.visited_frontiers
             )
 
             if already_visited:
@@ -322,7 +350,7 @@ class FrontierNavigator(Node):
 
             is_blacklisted = False
 
-            for failed_x, failed_y in self.failed_frontiers:
+            for failed_x, failed_y, failed_at in self.failed_frontiers:
                 distance_to_failed = (
                     (x - failed_x) ** 2 +
                     (y - failed_y) ** 2
@@ -471,16 +499,22 @@ class FrontierNavigator(Node):
 
         x, y, size = frontier
 
-        # goal right next to the robot, Nav2 would arrive without moving, so the map would not change (the start-up
-        # stall). Mark it visited and drive a short way towards it instead
+        # A nearby frontier is not necessarily explored yet. Nudge to obtain
+        # a new scan, but only mark it visited after genuinely reaching a goal.
         here = self.get_robot_position()
         if here is not None and math.hypot(x - here[0], y - here[1]) < self.min_goal_distance:
-            self.visited_frontiers.append((x, y))
             self.get_logger().info(
-                'Frontier (%.2f, %.2f) is right next to the robot - marking it visited'
+                'Frontier (%.2f, %.2f) is close - trying a scan-producing nudge'
                 % (x, y))
+            # mark it visited so the next choice is a different frontier
+            self.visited_frontiers.append((x, y, time.monotonic()))
             toward = math.atan2(y - here[1], x - here[0])
             if not self.start_nudge(here, toward):
+                # Avoid retrying this same too-close goal every second.
+                self.failed_frontiers.append((x, y, time.monotonic()))
+                self.get_logger().warning(
+                    'Nearby frontier has no safe nudge route - cooling it down'
+                )
                 if self.no_frontier_since is None:
                     self.no_frontier_since = time.monotonic()
             return
@@ -595,9 +629,16 @@ class FrontierNavigator(Node):
 
         # finish an in-place turn, then look for frontiers again
         if self.spinning:
-            if time.monotonic() - self.spin_start_time < self.spin_duration:
+            elapsed = time.monotonic() - self.spin_start_time
+            position = self.get_robot_position()
+            arrived = (self.nudge_goal is not None and position is not None
+                       and elapsed > 2.0
+                       and math.hypot(position[0] - self.nudge_goal[0],
+                                      position[1] - self.nudge_goal[1]) < 0.3)
+            if elapsed < self.spin_duration and not arrived:
                 return
             self.spinning = False
+            self.nudge_goal = None
             self.get_logger().info('Turn finished - selecting frontier again')
             self.send_waypoint()
             return
@@ -701,7 +742,8 @@ class FrontierNavigator(Node):
             )
 
             if distance_to_goal < 0.3:
-                self.visited_frontiers.append(self.current_goal)
+                self.visited_frontiers.append(
+                    (self.current_goal[0], self.current_goal[1], time.monotonic()))
 
                 self.get_logger().info(
                     'Frontier reached - marking as visited'
@@ -785,9 +827,19 @@ class FrontierNavigator(Node):
             self.last_movement_time = None
 
 
-            self.start_recovery()
+            # Try the existing LiDAR-checked short movement rather than
+            # returning to the previous location and crossing explored space.
+            position = self.get_robot_position()
+            if position is None or not self.start_nudge(position, None):
+                # no clear short drive (e.g. pressed against something):
+                # go back to where this goal was started from instead of
+                # sending the next goal from the stuck spot
+                self.get_logger().warning(
+                    'No safe short recovery movement - returning to previous position'
+                )
+                self.start_recovery()
 
-             # Start timer for finding another frontier
+            # Start timer for finding another frontier
             self.no_frontier_since = time.monotonic()
 
             self.get_logger().info(
@@ -891,7 +943,7 @@ class FrontierNavigator(Node):
         if self.current_goal is not None:
 
             self.failed_frontiers.append(
-                self.current_goal
+                (self.current_goal[0], self.current_goal[1], time.monotonic())
             )
 
             self.get_logger().info(
@@ -984,6 +1036,7 @@ class FrontierNavigator(Node):
 
         self.last_nudge_angle = angle
         self.last_nudge_from = position
+        self.nudge_goal = (x, y)
         # same state as the turn on the spot: wait spin_duration, then
         # choose a frontier again
         self.spinning = True
