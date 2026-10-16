@@ -103,9 +103,6 @@ class FrontierNavigator(Node):
         self.visited_frontiers = []
         self.visited_radius = 0.5
 
-        # spots that were already given a second chance (see release_frontiers)
-        self.retried_frontiers = []
-
         # start-up deadlock -> slam_toolbox only adds new scans to the
         # map after the robot moves/turns, so a stationary robot never gets a
         # new frontie so changing to make it so after no_frontier_wait seconds, 
@@ -804,32 +801,11 @@ class FrontierNavigator(Node):
         self.unstick_attempts += 1
 
         if self.unstick_attempts > self.max_spins_before_reset:
-            # driving did not help: the visited/blacklisted frontiers are the
-            # only ones left. Give each of those spots ONE more try (a spot
-            # that was already retried stays rejected until nothing else is
-            # left, which keeps back-and-forth to a minimum)
-            self.unstick_attempts = 0
-            released = self.release_frontiers()
-            if released > 0:
-                self.get_logger().warning(
-                    'Still no frontier - giving %d visited/blacklisted frontiers '
-                    'one more try' % released)
-                self.no_frontier_since = time.monotonic()
-                self.send_waypoint()
-                return
-            # every remaining spot was already retried once: start a fresh
-            # round, so the robot keeps going back to the last unmapped parts
-            # instead of stopping (only happens once nothing else is left)
+            # turning did not help: the 'visited' frontiers are the only ones
+            # left, so allow them again
             self.get_logger().warning(
-                'Still no frontier - all remaining frontiers were already retried, '
-                'allowing all %d again'
-                % (len(self.visited_frontiers) + len(self.failed_frontiers)))
-            self.retried_frontiers = []
-            self.visited_frontiers = []
-            self.failed_frontiers = []
-            self.no_frontier_since = time.monotonic()
-            self.send_waypoint()
-            return
+                'Still no frontier after turning - keeping visited/failed frontiers')
+            self.unstick_attempts = 1
 
         position = self.get_robot_position()
         if position is None:
@@ -923,24 +899,6 @@ class FrontierNavigator(Node):
                 % self.current_goal
             )
 
-
-    def release_frontiers(self):
-        # remove visited/blacklisted spots that have not been retried yet,
-        # and remember them as retried. Returns how many were released
-        released = 0
-        lists = []
-        for frontier_list in (self.visited_frontiers, self.failed_frontiers):
-            keep = []
-            for fx, fy in frontier_list:
-                if any(math.hypot(fx - rx, fy - ry) < self.visited_radius
-                       for rx, ry in self.retried_frontiers):
-                    keep.append((fx, fy))
-                else:
-                    self.retried_frontiers.append((fx, fy))
-                    released += 1
-            lists.append(keep)
-        self.visited_frontiers, self.failed_frontiers = lists
-        return released
 
     def scan_callback(self, msg):
         #keep the latest laser scan
