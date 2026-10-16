@@ -13,11 +13,6 @@
         <quadratic>0.001</quadratic>
       </attenuation>
       <direction>-0.5 0.1 -0.9</direction>
-      <spot>
-        <inner_angle>0</inner_angle>
-        <outer_angle>0</outer_angle>
-        <falloff>0</falloff>
-      </spot>
     </light>
     <model name="ground_plane">
       <static>1</static>
@@ -45,14 +40,11 @@
             </script>
           </material>
         </visual>
-        <self_collide>0</self_collide>
-        <enable_wind>0</enable_wind>
-        <kinematic>0</kinematic>
       </link>
     </model>
     <gravity>0 0 -9.8</gravity>
     <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
-    <atmosphere type="adiabatic" />
+    <atmosphere type="adiabatic"/>
     <physics type="ode">
       <max_step_size>0.001</max_step_size>
       <real_time_factor>1</real_time_factor>
@@ -63,1049 +55,478 @@
       <background>0.7 0.7 0.7 1</background>
       <shadows>0</shadows>
     </scene>
-    <audio>
-      <device>default</device>
-    </audio>
-    <wind />
-    <spherical_coordinates>
-      <surface_model>EARTH_WGS84</surface_model>
-      <latitude_deg>0</latitude_deg>
-      <longitude_deg>0</longitude_deg>
-      <elevation>0</elevation>
-      <heading_deg>0</heading_deg>
-    </spherical_coordinates>
     <gui fullscreen="0">
       <camera name="user_camera">
-        <pose>0 0 26 0 1.55 0</pose>
+        <pose>0 0 28 0 1.55 0</pose>
         <view_controller>orbit</view_controller>
         <projection_type>perspective</projection_type>
       </camera>
     </gui>
+
+    <!-- Outer boundary (expanded slightly for extra letter spacing) -->
     <model name="letter_wall_000">
       <static>1</static>
-      <pose>0.000000 -8.150000 0.450000 0 0 0.0000000</pose>
+      <pose>0.000000 -9.000000 0.450000 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>16.300000 0.200 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>18.000000 0.200 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>16.300000 0.200 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>18.000000 0.200 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_001">
       <static>1</static>
-      <pose>8.150000 0.000000 0.450000 0 0 1.5707963</pose>
+      <pose>9.000000 0.000000 0.450000 0 0 1.5707963</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>16.300000 0.200 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>18.000000 0.200 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>16.300000 0.200 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>18.000000 0.200 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_002">
       <static>1</static>
-      <pose>0.000000 8.150000 0.450000 0 0 3.1415927</pose>
+      <pose>0.000000 9.000000 0.450000 0 0 3.1415927</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>16.300000 0.200 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>18.000000 0.200 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>16.300000 0.200 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>18.000000 0.200 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_003">
       <static>1</static>
-      <pose>-8.150000 0.000000 0.450000 0 0 -1.5707963</pose>
+      <pose>-9.000000 0.000000 0.450000 0 0 -1.5707963</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>16.300000 0.200 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>18.000000 0.200 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>16.300000 0.200 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>18.000000 0.200 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
+
+    <!-- Letter M (left, upper) — wider strokes, shifted left for spacing -->
     <model name="letter_wall_004">
       <static>1</static>
-      <pose>-7.147600 4.387000 0.450000 0 0 1.5707963</pose>
+      <pose>-7.650000 4.500000 0.450000 0 0 1.5707963</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>5.227500 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>5.600000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>5.227500 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>5.600000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_005">
       <static>1</static>
-      <pose>-6.291600 5.805820 0.450000 0 0 -0.9918982</pose>
+      <pose>-6.650000 6.000000 0.450000 0 0 -0.9918982</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.997614 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>3.200000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.997614 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>3.200000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_006">
       <static>1</static>
-      <pose>-4.579600 5.805820 0.450000 0 0 0.9918982</pose>
+      <pose>-4.750000 6.000000 0.450000 0 0 0.9918982</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.997614 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>3.200000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.997614 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>3.200000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_007">
       <static>1</static>
-      <pose>-3.723600 4.387000 0.450000 0 0 -1.5707963</pose>
+      <pose>-3.750000 4.500000 0.450000 0 0 -1.5707963</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>5.227500 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>5.600000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>5.227500 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>5.600000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
+
+    <!-- Digit 4 (upper middle) — NO horizontal overhang: crossbar ends flush at the vertical stem -->
+    <!-- left angled / vertical of 4 -->
     <model name="letter_wall_008">
       <static>1</static>
-      <pose>-1.588950 7.115500 0.450000 0 0 3.1415927</pose>
+      <pose>-1.900000 5.700000 0.450000 0 0 1.5707963</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.511250 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>3.200000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.511250 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>3.200000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
+    <!-- crossbar: short, ends at stem (no overhang past right vertical) -->
     <model name="letter_wall_009">
       <static>1</static>
-      <pose>-2.899700 4.387000 0.450000 0 0 -1.5707963</pose>
+      <pose>-0.950000 4.500000 0.450000 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>5.227500 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>1.900000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>5.227500 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>1.900000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
+    <!-- right vertical stem of 4 (full height) -->
     <model name="letter_wall_010">
       <static>1</static>
-      <pose>-1.785563 4.387000 0.450000 0 0 0.0000000</pose>
+      <pose>0.000000 4.500000 0.450000 0 0 -1.5707963</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.134562 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>5.600000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.134562 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>5.600000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
+
+    <!-- Letter E (upper right of centre) -->
     <model name="letter_wall_011">
       <static>1</static>
-      <pose>-1.588950 1.658500 0.450000 0 0 0.0000000</pose>
+      <pose>2.000000 4.500000 0.450000 0 0 -1.5707963</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.511250 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>5.600000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.511250 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>5.600000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_012">
       <static>1</static>
-      <pose>1.856450 7.115500 0.450000 0 0 0.0000000</pose>
+      <pose>3.250000 7.300000 0.450000 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.511250 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>2.500000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.511250 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>2.500000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_013">
       <static>1</static>
-      <pose>1.856450 4.387000 0.450000 0 0 -1.5707963</pose>
+      <pose>3.100000 4.500000 0.450000 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>5.227500 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>2.200000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>5.227500 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>2.200000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_014">
       <static>1</static>
-      <pose>3.991100 4.387000 0.450000 0 0 1.5707963</pose>
+      <pose>3.250000 1.700000 0.450000 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>5.227500 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>2.500000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>5.227500 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>2.500000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
+
+    <!-- Letter T (far upper right) -->
     <model name="letter_wall_015">
       <static>1</static>
-      <pose>5.332612 7.115500 0.450000 0 0 0.0000000</pose>
+      <pose>6.200000 7.300000 0.450000 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.570187 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>3.000000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.570187 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>3.000000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_016">
       <static>1</static>
-      <pose>6.879297 6.706225 0.450000 0 0 -1.1061035</pose>
+      <pose>6.200000 4.500000 0.450000 0 0 -1.5707963</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>0.877138 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>5.600000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>0.877138 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>5.600000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
+
+    <!-- Letter R (lower left) -->
     <model name="letter_wall_017">
       <static>1</static>
-      <pose>7.084470 5.532970 0.450000 0 0 -1.5707963</pose>
+      <pose>-6.500000 -4.500000 0.450000 0 0 1.5707963</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>1.463700 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>5.600000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>1.463700 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>5.600000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_018">
       <static>1</static>
-      <pose>6.879297 4.577995 0.450000 0 0 -2.3919659</pose>
+      <pose>-5.200000 -1.700000 0.450000 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>0.537047 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>2.600000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>0.537047 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>2.600000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_019">
       <static>1</static>
-      <pose>5.332612 4.387000 0.450000 0 0 3.1415927</pose>
+      <pose>-3.900000 -2.900000 0.450000 0 0 -1.5707963</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.570187 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>2.400000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.570187 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>2.400000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_020">
       <static>1</static>
-      <pose>6.421605 3.022750 0.450000 0 0 -1.0817554</pose>
+      <pose>-5.200000 -4.100000 0.450000 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.960804 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>2.600000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.960804 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>2.600000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_021">
       <static>1</static>
-      <pose>-5.019370 -4.387000 0.450000 0 0 1.5707963</pose>
+      <pose>-4.500000 -5.900000 0.450000 0 0 -0.9000000</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>5.227500 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>2.800000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>5.227500 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>2.800000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
+
+    <!-- Letter O (lower centre-left) -->
     <model name="letter_wall_022">
       <static>1</static>
-      <pose>-7.356250 -3.213745 0.450000 0 0 -1.5707963</pose>
+      <pose>-1.200000 -1.700000 0.450000 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.456925 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>2.800000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.456925 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>2.800000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_023">
       <static>1</static>
-      <pose>-5.858250 -4.496140 0.450000 0 0 0.0000000</pose>
+      <pose>0.200000 -4.500000 0.450000 0 0 -1.5707963</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.870000 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>5.600000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.870000 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>5.600000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_024">
       <static>1</static>
-      <pose>-1.952750 -1.876780 0.450000 0 0 0.0000000</pose>
+      <pose>-1.200000 -7.300000 0.450000 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.870000 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>2.800000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.870000 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>2.800000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_025">
       <static>1</static>
-      <pose>-0.454750 -3.050035 0.450000 0 0 -1.5707963</pose>
+      <pose>-2.600000 -4.500000 0.450000 0 0 1.5707963</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.247825 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>5.600000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.247825 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>5.600000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
+
+    <!-- Letter B (lower centre-right) -->
     <model name="letter_wall_026">
       <static>1</static>
-      <pose>-1.952750 -4.223290 0.450000 0 0 3.1415927</pose>
+      <pose>2.000000 -4.500000 0.450000 0 0 1.5707963</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.870000 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>5.600000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.870000 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>5.600000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_027">
       <static>1</static>
-      <pose>-3.450750 -5.669395 0.450000 0 0 -1.5707963</pose>
+      <pose>3.300000 -1.700000 0.450000 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.770575 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>2.600000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.770575 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>2.600000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_028">
       <static>1</static>
-      <pose>-1.952750 -7.115500 0.450000 0 0 0.0000000</pose>
+      <pose>4.600000 -3.100000 0.450000 0 0 -1.5707963</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.870000 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>2.800000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.870000 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>2.800000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_029">
       <static>1</static>
-      <pose>0.454750 -4.387000 0.450000 0 0 1.5707963</pose>
+      <pose>3.300000 -4.500000 0.450000 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>5.227500 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>2.600000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>5.227500 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>2.600000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_030">
       <static>1</static>
-      <pose>1.952750 -1.658500 0.450000 0 0 0.0000000</pose>
+      <pose>4.600000 -5.900000 0.450000 0 0 -1.5707963</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.870000 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>2.800000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.870000 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>2.800000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_031">
       <static>1</static>
-      <pose>3.450750 -4.387000 0.450000 0 0 -1.5707963</pose>
+      <pose>3.300000 -7.300000 0.450000 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>5.227500 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>2.600000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>5.227500 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>2.600000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
+
+    <!-- Letter S (lower right) -->
     <model name="letter_wall_032">
       <static>1</static>
-      <pose>1.952750 -7.115500 0.450000 0 0 3.1415927</pose>
+      <pose>6.800000 -1.700000 0.450000 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.870000 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>2.800000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.870000 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>2.800000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_033">
       <static>1</static>
-      <pose>5.858250 -1.876780 0.450000 0 0 0.0000000</pose>
+      <pose>5.400000 -2.900000 0.450000 0 0 1.5707963</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.870000 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>2.400000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.870000 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>2.400000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_034">
       <static>1</static>
-      <pose>7.356250 -3.050035 0.450000 0 0 -1.5707963</pose>
+      <pose>6.800000 -4.100000 0.450000 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.247825 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>2.800000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.247825 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>2.800000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_035">
       <static>1</static>
-      <pose>5.858250 -4.223290 0.450000 0 0 3.1415927</pose>
+      <pose>8.200000 -5.500000 0.450000 0 0 -1.5707963</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.870000 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>2.800000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.870000 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>2.800000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
     <model name="letter_wall_036">
       <static>1</static>
-      <pose>4.360250 -5.669395 0.450000 0 0 -1.5707963</pose>
+      <pose>6.800000 -7.300000 0.450000 0 0 0</pose>
       <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.770575 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
+        <collision name="collision"><geometry><box><size>2.800000 0.360 0.900000</size></box></geometry></collision>
         <visual name="visual">
           <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.770575 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
+          <geometry><box><size>2.800000 0.360 0.900000</size></box></geometry>
+          <material><ambient>0.32 0.34 0.38 1</ambient><diffuse>0.45 0.48 0.51 1</diffuse><specular>0.08 0.08 0.08 1</specular></material>
         </visual>
-        <self_collide>0</self_collide>
       </link>
     </model>
-    <model name="letter_wall_037">
-      <static>1</static>
-      <pose>5.858250 -7.115500 0.450000 0 0 0.0000000</pose>
-      <link name="link">
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>2.870000 0.280 0.900000</size>
-            </box>
-          </geometry>
-        </collision>
-        <visual name="visual">
-          <cast_shadows>0</cast_shadows>
-          <geometry>
-            <box>
-              <size>2.870000 0.280 0.900000</size>
-            </box>
-          </geometry>
-          <material>
-            <ambient>0.32 0.34 0.38 1</ambient>
-            <diffuse>0.45 0.48 0.51 1</diffuse>
-            <specular>0.08 0.08 0.08 1</specular>
-          </material>
-        </visual>
-        <self_collide>0</self_collide>
-      </link>
-    </model>
+
   </world>
 </sdf>
