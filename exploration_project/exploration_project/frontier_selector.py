@@ -5,7 +5,8 @@ import math
 from rclpy.node import Node
 
 #from nav2_msgs.msg import BehaviorTreeLog
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Twist
+from action_msgs.srv import CancelGoal
 from std_msgs.msg import Float32MultiArray
 from tf2_ros import Buffer, TransformListener
 from visualization_msgs.msg import Marker, MarkerArray
@@ -61,6 +62,25 @@ class FrontierNavigator(Node):
             self.scan_callback,
             qos_profile_sensor_data
         )
+
+        # Bump guard: if the laser shows something within guard_margin of the
+        # robot's body while it is driving, cancel the Nav2 goal, back
+        # straight off slowly and choose a different frontier
+        self.cmd_pub = self.create_publisher(Twist, 'cmd_vel', 10)
+        self.cancel_client = self.create_client(
+            CancelGoal, 'navigate_to_pose/_action/cancel_goal')
+        self.guard_margin = 0.07       # m between body outline and obstacle
+        self.guard_clear = 0.25        # m that must be free to back off that way
+        self.backoff_speed = 0.06      # m/s
+        self.backoff_time = 2.0        # s
+        self.backoff_vx = 0.0
+        self.backoff_start = None
+        self.backoff_until = None
+        self.last_guard_time = -1e9
+        self.last_guard_position = None
+        self._extent_key = None
+        self._extent = None
+        self.backoff_timer = self.create_timer(0.1, self.backoff_step)
 
         # Create a subscriber to the behavior_tree_log topic
         # The constructor inputs are (message type, topic name, associated
@@ -125,6 +145,8 @@ class FrontierNavigator(Node):
         #slam_toolbox only adds a scan after the robot has DRIVEN about
         # 0.5 m, a short drive into open space is used instead
         self.nudge_distance = 0.8
+        # longer short drive tried first: covers corridors in fewer steps
+        self.long_nudge_distance = 1.5
         self.nudge_goal = None
         self.last_nudge_angle = None
         self.last_nudge_from = None
@@ -291,7 +313,7 @@ class FrontierNavigator(Node):
 
         # Send a goal if one is not already active and robot is not in recovery
         if (not self.goal_active and not self.recovering and not self.spinning
-                and len(self.frontiers) > 0):
+                and self.backoff_until is None and len(self.frontiers) > 0):
             self.send_waypoint()
 
 
@@ -627,6 +649,10 @@ class FrontierNavigator(Node):
 
     def check_goal_timeout(self):
 
+        # bump guard is backing the robot off: wait for it to finish
+        if self.backoff_until is not None:
+            return
+
         # finish an in-place turn, then look for frontiers again
         if self.spinning:
             elapsed = time.monotonic() - self.spin_start_time
@@ -956,6 +982,159 @@ class FrontierNavigator(Node):
         #keep the latest laser scan
         self.last_scan = msg
 
+        # bump guard: only while driving and not already backing off
+        if self.backoff_until is not None:
+            return
+        if not (self.goal_active or self.spinning or self.recovering):
+            return
+        now = time.monotonic()
+        if now - self.last_guard_time < 5.0:
+            return
+        extent = self.body_extents(msg)
+        closest_gap = None
+        closest_angle = 0.0
+        gaps = []
+        for i, r in enumerate(msg.ranges):
+            angle = msg.angle_min + i * msg.angle_increment
+            if math.isfinite(r) and r > msg.range_min:
+                gap = r - extent[i]
+            else:
+                gap = float('inf')
+            gaps.append((angle, gap))
+            if closest_gap is None or gap < closest_gap:
+                closest_gap, closest_angle = gap, angle
+        if closest_gap is None or closest_gap >= self.guard_margin:
+            return
+
+        # the robot can only move straight forward or straight back: pick
+        # the one away from the obstacle, if a 70 deg cone that way is clear
+        def way_clear(heading):
+            for angle, gap in gaps:
+                diff = abs(math.atan2(math.sin(angle - heading), math.cos(angle - heading)))
+                if diff < math.radians(35) and gap < self.guard_clear:
+                    return False
+            return True
+        order = [math.pi, 0.0] if math.cos(closest_angle) > 0 else [0.0, math.pi]
+        self.backoff_vx = 0.0
+        for heading in order:
+            if way_clear(heading):
+                self.backoff_vx = self.backoff_speed if heading == 0.0 else -self.backoff_speed
+                break
+        if self.backoff_vx == 0.0:
+            # neither way fully clear: use the roomier of the two if it still
+            # has at least 0.10 m free (the back-off stops early if it closes)
+            def room(heading):
+                return min([gap for angle, gap in gaps
+                            if abs(math.atan2(math.sin(angle - heading),
+                                              math.cos(angle - heading))) < math.radians(35)]
+                           or [0.0])
+            best = max((0.0, math.pi), key=room)
+            if room(best) > 0.10:
+                self.backoff_vx = self.backoff_speed if best == 0.0 else -self.backoff_speed
+
+        # a repeat stop at the same spot is about where the robot is, not
+        # about the goal, so only blacklist the goal the first time
+        position = self.get_robot_position()
+        repeat = (position is not None and self.last_guard_position is not None
+                  and math.hypot(position[0] - self.last_guard_position[0],
+                                 position[1] - self.last_guard_position[1]) < 0.3)
+        self.last_guard_position = position
+
+        self.last_guard_time = now
+        self.get_logger().warning(
+            'Bump guard: obstacle %.2f m from the body at %.0f deg - stopping and %s'
+            % (closest_gap, math.degrees(closest_angle),
+               'moving forward' if self.backoff_vx > 0 else
+               ('backing up' if self.backoff_vx < 0 else 'holding still')))
+        self.cancel_navigation()
+        if not repeat:
+            self.blacklist_current_goal()
+        self.goal_active = False
+        self.current_goal = None
+        self.spinning = False
+        self.nudge_goal = None
+        self.recovering = False
+        self.recovery_start_time = None
+        self.last_robot_position = None
+        self.last_movement_time = None
+        self.backoff_start = now + 0.3           # give Nav2 time to stop
+        self.backoff_until = self.backoff_start + self.backoff_time
+
+
+    def body_extents(self, msg):
+        # distance from the lidar to the edge of the waffle_pi body along
+        # every beam: 0.265 m square body centred on the lidar, wheels out to
+        # 0.153 m at x = 0.031..0.097 (lidar frame). Worked out once
+        key = (len(msg.ranges), round(msg.angle_min, 4), round(msg.angle_increment, 6))
+        if key == self._extent_key:
+            return self._extent
+        extent = []
+        for i in range(len(msg.ranges)):
+            angle = msg.angle_min + i * msg.angle_increment
+            c, s = math.cos(angle), math.sin(angle)
+            t = 0.0
+            while t < 0.3:
+                x, y = c * t, s * t
+                inside = ((abs(x) <= 0.1325 and abs(y) <= 0.1325) or
+                          (0.031 <= x <= 0.097 and abs(y) <= 0.153))
+                if not inside:
+                    break
+                t += 0.002
+            extent.append(t)
+        self._extent_key, self._extent = key, extent
+        return extent
+
+
+    def cancel_navigation(self):
+        # cancel all Nav2 navigate_to_pose goals (an empty request = all)
+        if self.cancel_client.service_is_ready():
+            self.cancel_client.call_async(CancelGoal.Request())
+            return
+        # fallback: a goal at the robot's own pose and heading
+        position = self.get_robot_position()
+        if position is not None:
+            yaw = self.get_robot_yaw()
+            stop = PoseStamped()
+            stop.header.frame_id = 'map'
+            stop.header.stamp = self.get_clock().now().to_msg()
+            stop.pose.position.x = position[0]
+            stop.pose.position.y = position[1]
+            stop.pose.orientation.z = math.sin(yaw / 2.0)
+            stop.pose.orientation.w = math.cos(yaw / 2.0)
+            self.publisher_.publish(stop)
+
+
+    def backoff_step(self):
+        # runs every 0.1 s: slow straight back-off after a bump-guard stop
+        if self.backoff_until is None:
+            return
+        now = time.monotonic()
+        if now < self.backoff_start:
+            return
+        twist = Twist()
+        if now < self.backoff_until:
+            # stop early if the way we are moving closes up
+            if self.backoff_vx != 0.0 and self.last_scan is not None:
+                scan = self.last_scan
+                extent = self.body_extents(scan)
+                heading = 0.0 if self.backoff_vx > 0 else math.pi
+                for i, r in enumerate(scan.ranges):
+                    angle = scan.angle_min + i * scan.angle_increment
+                    diff = abs(math.atan2(math.sin(angle - heading), math.cos(angle - heading)))
+                    if (diff < math.radians(35) and math.isfinite(r)
+                            and r > scan.range_min and r - extent[i] < 0.05):
+                        self.backoff_vx = 0.0
+                        break
+            twist.linear.x = self.backoff_vx
+            self.cmd_pub.publish(twist)
+            return
+        self.cmd_pub.publish(twist)            # zero velocity
+        self.backoff_until = None
+        self.backoff_start = None
+        self.get_logger().info('Bump guard: clear - choosing a new frontier')
+        self.no_frontier_since = time.monotonic()
+        self.send_waypoint()
+
 
     def laser_points(self):
         # obstacles the laser sees, in the robot frame
@@ -998,7 +1177,9 @@ class FrontierNavigator(Node):
                 avoid.append(self.last_nudge_angle)
 
         best = None
-        for distance in (self.nudge_distance, 0.6):
+        # try a long drive first (fast progress along corridors), then the
+        # usual 0.8 m and 0.6 m. Every length is checked against the laser
+        for distance in (self.long_nudge_distance, self.nudge_distance, 0.6):
             for k in range(36):
                 world_a = yaw - math.pi + k * (2.0 * math.pi / 36)
                 if any(abs(math.atan2(math.sin(world_a - b), math.cos(world_a - b))) < 0.6
@@ -1021,6 +1202,11 @@ class FrontierNavigator(Node):
                     best = (score, x, y, world_a)
             if best is not None:
                 break
+        if best is None and avoid:
+            # the only open way is back the way the last drive came (e.g. a
+            # dead end): allow it rather than getting stuck turning on the spot
+            self.last_nudge_angle = None
+            return self.start_nudge(position, toward)
         if best is None:
             return False
 
