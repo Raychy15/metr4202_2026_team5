@@ -26,7 +26,7 @@ source install/setup.bash
 ## Launch Instructions
 1. Launch Gazebo Simulation
 	export TURTLEBOT3_MODEL=waffle_pi
-	ros2 launch turtlebot3_gazebo turtlebot3_world.launch.py (Or whatever world you choose)
+	ros2 launch ~/turtlebot3_ws/src/metr4202_2026_team5/test_worlds/<world_name>/<world_name>.launch.py (Or whatever world you choose)
 	
 2. Launch SLAM 
 	export TURTLEBOT3_MODEL=waffle_pi
