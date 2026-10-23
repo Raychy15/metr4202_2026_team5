@@ -129,6 +129,34 @@ class FrontierNavigator(Node):
         self.visited_radius = 0.5
         self.visited_frontier_cooldown = 120.0
 
+        # Exploration efficiency: keep working on one map sector instead of
+        # hopping between nearby-looking frontiers on opposite sides of walls.
+        # The sectors are fixed 3 m squares in the map coordinate frame.
+        self.sector_size = 3.0
+        self.active_sector = None
+        # When a sector has no eligible candidates, favour other sectors for
+        # a while. This is a preference, not a permanent exploration ban.
+        self.sector_cooldowns = {}  # (sector_x, sector_y) -> monotonic expiry
+        self.sector_revisit_cooldown = 45.0
+
+        # Hard-coded sector completion rule. A cell is "mapped" if SLAM
+        # reports it as free OR occupied (value >= 0), rather than unknown (-1).
+        # Count the entire fixed-size sector, including parts outside /map, so
+        # a partially published map does not falsely give 100% completion.
+        self.sector_target_coverage = 0.80  # Change to 0.70 / 0.90 to tune.
+
+        # Escape conditions: an inaccessible/partly-walled-off sector may
+        # never reach 80%. Do not lock the robot there indefinitely.
+        self.sector_empty_grace = 12.0  # No usable frontier in active sector.
+        self.sector_stall_timeout = 75.0  # No >=1 percentage-point gain.
+        self.sector_progress_increment = 0.01
+        self.sector_empty_since = None
+        self.sector_last_progress_time = None
+        self.sector_progress_baseline = None
+        self.sector_progress_key = None
+        self.wall_crossing_penalty = 2.5  # metres of scoring penalty
+        self.local_radius = 2.0
+
         # start-up deadlock -> slam_toolbox only adds new scans to the
         # map after the robot moves/turns, so a stationary robot never gets a
         # new frontie so changing to make it so after no_frontier_wait seconds, 
@@ -317,7 +345,206 @@ class FrontierNavigator(Node):
             self.send_waypoint()
 
 
-    #might change later depending on how tests go
+    def frontier_sector(self, x, y):
+        """Return a stable (column, row) sector ID for map-frame coordinates.
+
+        math.floor, rather than int, also handles negative map coordinates.
+        """
+        return (math.floor(x / self.sector_size),
+                math.floor(y / self.sector_size))
+
+    def map_line_is_clear(self, x1, y1, x2, y2):
+        """Whether the direct line crosses only known free occupancy cells.
+
+        This is a quick ranking heuristic, NOT a collision or path check.
+        Nav2 remains responsible for planning around walls and inflations.
+        """
+        if self.map_msg is None:
+            return False
+        info = self.map_msg.info
+        if info.resolution <= 0:
+            return False
+        length = math.hypot(x2 - x1, y2 - y1)
+        steps = max(1, math.ceil(length / info.resolution))
+        for i in range(steps + 1):
+            t = i / steps
+            wx = x1 + t * (x2 - x1)
+            wy = y1 + t * (y2 - y1)
+            gx = math.floor((wx - info.origin.position.x) / info.resolution)
+            gy = math.floor((wy - info.origin.position.y) / info.resolution)
+            if not (0 <= gx < info.width and 0 <= gy < info.height):
+                return False
+            if self.map_msg.data[gy * info.width + gx] != 0:
+                return False
+        return True
+
+    def sector_coverage(self, sector):
+        """Fraction of this fixed square that has been observed by SLAM.
+
+        Includes known free (0), known obstacles (e.g. 100), and any other
+        nonnegative occupancy estimate. Unknown (-1) and cells outside the
+        currently published map count as unexplored. Cell centres determine
+        sector membership; map origin is assumed axis-aligned as in the
+        detector. This is *map coverage*, not navigable floor coverage.
+        """
+        if sector is None or self.map_msg is None:
+            return None
+
+        info = self.map_msg.info
+        resolution = info.resolution
+        if resolution <= 0 or info.width <= 0 or info.height <= 0:
+            return None
+
+        # Half-open world-space sector [x0,x1) x [y0,y1).
+        x0, y0 = (sector[0] * self.sector_size,
+                  sector[1] * self.sector_size)
+        x1, y1 = x0 + self.sector_size, y0 + self.sector_size
+        origin_x = info.origin.position.x
+        origin_y = info.origin.position.y
+
+        # Cell centre = origin + (grid_index + 0.5) * resolution.
+        gx0 = math.ceil((x0 - origin_x) / resolution - 0.5)
+        gx1 = math.ceil((x1 - origin_x) / resolution - 0.5)
+        gy0 = math.ceil((y0 - origin_y) / resolution - 0.5)
+        gy1 = math.ceil((y1 - origin_y) / resolution - 0.5)
+        total = (gx1 - gx0) * (gy1 - gy0)
+        if total <= 0:
+            return None
+
+        # Only scan actual map cells, but keep the full-sector denominator.
+        left = max(0, gx0)
+        right = min(info.width, gx1)
+        bottom = max(0, gy0)
+        top = min(info.height, gy1)
+        known = 0
+        if left < right and bottom < top:
+            for gy in range(bottom, top):
+                row = gy * info.width
+                for gx in range(left, right):
+                    if self.map_msg.data[row + gx] >= 0:
+                        known += 1
+
+        return known / total
+
+    def note_sector_progress(self, now, coverage):
+        """Track last meaningful coverage increase for the active sector."""
+        if self.sector_progress_key != self.active_sector:
+            self.sector_progress_key = self.active_sector
+            self.sector_progress_baseline = coverage
+            self.sector_last_progress_time = now
+        elif (coverage is not None and
+              (self.sector_progress_baseline is None or
+               coverage >= self.sector_progress_baseline +
+               self.sector_progress_increment)):
+            self.sector_progress_baseline = coverage
+            self.sector_last_progress_time = now
+
+    def select_active_sector(self, candidates, robot_x, robot_y, now):
+        """Commit to a sector until it is >=80% mapped or becomes unproductive.
+
+        The percentage is measured from /map (known cells / all sector cells).
+        If an active sector still has suitable frontiers and its coverage is
+        below the target, normally stay there regardless of scores elsewhere.
+        Switch to another *unfinished* sector when the target is met, or use
+        the no-frontier/stagnation escape conditions to avoid deadlock.
+        """
+        groups = {}
+        for candidate in candidates:
+            key = self.frontier_sector(candidate[0], candidate[1])
+            groups.setdefault(key, []).append(candidate)
+
+        self.sector_cooldowns = {
+            key: until for key, until in self.sector_cooldowns.items()
+            if until > now
+        }
+
+        current_candidates = groups.get(self.active_sector, [])
+        current_coverage = self.sector_coverage(self.active_sector)
+        if self.active_sector is not None:
+            self.note_sector_progress(now, current_coverage)
+
+        target_met = (current_coverage is not None and
+                      current_coverage >= self.sector_target_coverage)
+        if current_candidates:
+            self.sector_empty_since = None
+        elif self.active_sector is not None and self.sector_empty_since is None:
+            self.sector_empty_since = now
+
+        stalled = (current_coverage is not None and not target_met and
+                   self.sector_last_progress_time is not None and
+                   now - self.sector_last_progress_time >=
+                   self.sector_stall_timeout)
+
+        # Prefer exploring below-target sectors before revisiting mapped ones.
+        other_sectors = [k for k in groups if k != self.active_sector]
+        other_coverage = {k: self.sector_coverage(k) for k in other_sectors}
+        incomplete = [k for k in other_sectors
+                      if (other_coverage[k] is None or
+                          other_coverage[k] < self.sector_target_coverage)]
+
+        # A useful sector is locked until it reaches the target. The lock can
+        # be released early only if map coverage has stopped increasing.
+        if current_candidates and (not incomplete or
+                                   (not target_met and not stalled)):
+            return current_candidates
+
+        # No eligible active-sector candidates: wait briefly for a fresh scan
+        # or cooldown expiry. The caller can run its existing recovery logic.
+        if (self.active_sector is not None and not current_candidates and
+            not target_met and self.sector_empty_since is not None and
+            now - self.sector_empty_since < self.sector_empty_grace):
+            return []
+
+        # If no other useful sector exists, continue exploring the current one.
+        if current_candidates and not incomplete:
+            return current_candidates
+        if not other_sectors and current_candidates:
+            return current_candidates
+        if not groups:
+            return []
+
+        old_sector = self.active_sector
+        if old_sector is not None:
+            self.sector_cooldowns[old_sector] = now + self.sector_revisit_cooldown
+
+        # On completion/stall, prefer sectors not yet at the target. If no
+        # unfinished sector is available, use any other eligible one.
+        options = incomplete if incomplete else other_sectors
+        if not options:
+            return current_candidates
+        fresh_options = [k for k in options if k not in self.sector_cooldowns]
+        if fresh_options:
+            options = fresh_options
+
+        def sector_cost(key):
+            return min(
+                math.hypot(f[0] - robot_x, f[1] - robot_y)
+                - 0.02 * f[2]
+                + (0.0 if self.map_line_is_clear(
+                    robot_x, robot_y, f[0], f[1]
+                ) else self.wall_crossing_penalty)
+                for f in groups[key]
+            )
+
+        self.active_sector = min(options, key=sector_cost)
+        self.sector_empty_since = None
+        new_coverage = self.sector_coverage(self.active_sector)
+        self.note_sector_progress(now, new_coverage)
+        explanation = ('target reached' if target_met else
+                       'mapping stalled' if stalled else
+                       'no eligible frontier' if old_sector is not None else
+                       'initial sector')
+        self.get_logger().info(
+            f'Exploration sector changed: {old_sector} -> '
+            f'{self.active_sector} ({explanation}); '
+            f'previous coverage: '
+            f'{"unknown" if current_coverage is None else f"{current_coverage:.1%}"}; '
+            f'new coverage: '
+            f'{"unknown" if new_coverage is None else f"{new_coverage:.1%}"}; '
+            f'target: {self.sector_target_coverage:.0%}'
+        )
+        return groups[self.active_sector]
+
     def choose_frontier(self):
         
         if not self.frontiers:
@@ -405,6 +632,10 @@ class FrontierNavigator(Node):
         )
 
         if not available_frontiers:
+            # Also start the empty-sector clock when every candidate is
+            # rejected globally, not just when other sectors have candidates.
+            if self.active_sector is not None and self.sector_empty_since is None:
+                self.sector_empty_since = now
             self.get_logger().warning(
                 'No suitable frontier passed the filters'
             )
@@ -419,9 +650,29 @@ class FrontierNavigator(Node):
 
         robot_x, robot_y = robot_position
 
-        # NEW: Prefer nearby frontiers before travelling across the map
-        local_radius = 2.0
+        # Stay in the same sector across successive goals. The sector only
+        # changes once no candidate in it survives the existing filters.
+        available_frontiers = self.select_active_sector(
+            available_frontiers, robot_x, robot_y, now
+        )
+        if not available_frontiers:
+            self.get_logger().info(
+                'Waiting for fresh mapping in the active sector before switching'
+            )
+            return None
 
+        # Prefer a directly free corridor when available. Otherwise keep the
+        # blocked candidates: Nav2 may still plan a safe route around a wall.
+        direct_frontiers = [
+            f for f in available_frontiers
+            if self.map_line_is_clear(robot_x, robot_y, f[0], f[1])
+        ]
+        if direct_frontiers:
+            available_frontiers = direct_frontiers
+
+        # Keep the original 2 m local preference, but within the active sector
+        # and after preferring frontiers not obviously separated by walls.
+        local_radius = self.local_radius
         local_frontiers = [
             frontier for frontier in available_frontiers
             if math.hypot(
@@ -462,7 +713,7 @@ class FrontierNavigator(Node):
                 - size_weight * size
             )
 
-            self.get_logger().info(
+            self.get_logger().debug(
                 f'Candidate ({x:.2f}, {y:.2f}): '
                 f'distance={distance:.2f}, '
                 f'size={size}, cost={score:.2f}'
@@ -477,7 +728,7 @@ class FrontierNavigator(Node):
             return None
 
         self.get_logger().info(
-            f'Selected frontier: {best_frontier}, '
+            f'Selected frontier {best_frontier} in sector {self.active_sector}, '
             f'score: {best_score:.2f}'
         )
 
@@ -1176,6 +1427,18 @@ class FrontierNavigator(Node):
                     position[1] - self.last_nudge_from[1]) < 0.2):
                 avoid.append(self.last_nudge_angle)
 
+        # The lock applies only to exploration nudges with an active sector,
+        # not emergency bump-guard backing. If the sector has had no frontiers
+        # for the grace period, permit an escape instead of trapping the robot.
+        coverage = self.sector_coverage(self.active_sector)
+        locked = (self.active_sector is not None and
+                  coverage is not None and
+                  coverage < self.sector_target_coverage and
+                  self.frontier_sector(*position) == self.active_sector and
+                  (self.sector_empty_since is None or
+                   time.monotonic() - self.sector_empty_since <
+                   self.sector_empty_grace))
+
         best = None
         # try a long drive first (fast progress along corridors), then the
         # usual 0.8 m and 0.6 m. Every length is checked against the laser
@@ -1193,6 +1456,8 @@ class FrontierNavigator(Node):
                     continue
                 x = position[0] + distance * math.cos(world_a)
                 y = position[1] + distance * math.sin(world_a)
+                if locked and self.frontier_sector(x, y) != self.active_sector:
+                    continue
                 if self.wall_distance(x, y) < 0.35:
                     continue
                 score = self.wall_distance(x, y)
