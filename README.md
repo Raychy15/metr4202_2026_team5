@@ -1,3 +1,18 @@
+# Project Overview
+
+The project makes use of ROS2 Humble in order for a TurtleBot3 Waffle Pi to explore and create a map of an unknown environment, combining SLAM Toolbox, frontier-based exploration, Nav2 navigation and ArUco marker detection.
+
+# Main Features
+- **Frontier Detection:** The method makes use of the occupancy grid produced by SLAM Toolbox in order to identify unexplored regions. The frontier cells are grouped by means of a breadth-first search, and larger clusters are divided in order to create more exploration points.
+- **Frontier Selection:** The location to be chosen next is determined by considering both the distance and the size of the frontier. The map is divided up into 3 m sectors, and the robot aims to have explored 80% of each sector before proceeding to the next one.
+– Navigation and recovery: The robot uses Nav2 to move between designated locations, and if it becomes stuck or comes near an obstacle, it tries out recovery using LiDAR measurements.
+- **ArUco Detection:** The robot's camera is used to detect ArUco markers and to estimate the markers' positions on the map.
+
+# How it Works
+As it moves, the robot creates a map using LiDAR and the SLAM Toolbox; the frontier detector determines the boundaries between areas that have been explored and those that have not, and the selector decides where to go next. Nav2 is in charge of navigating to these places, after which the process is carried out again as more of the environment is discovered. The camera also picks up the ArUco markers and notes their positions
+
+
+
 # Autonomous Exploration and Vision Project
 
 This package integrates frontier-based autonomous exploration with real-time ArUco marker detection. It uses a custom frontier detection algorithm to navigate an enclosed maze while translating camera-relative ArUco marker detections into a permanent global map.
